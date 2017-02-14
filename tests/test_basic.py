@@ -1,5 +1,5 @@
 
-from .context import basic
+from .context import jarpis
 
 import unittest
 
@@ -10,7 +10,7 @@ class BasicTestSuite(unittest.TestCase):
         assert True
 
     def test_say_hmm(self):
-        if basic.basic().__eq__("hmmm..."):
+        if jarpis.test().__eq__("hmm"):
             assert True
         else:
             assert False
