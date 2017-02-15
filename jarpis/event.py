@@ -1,4 +1,5 @@
 from jarpis import conn
+import sqlite3
 
 class Event(object):
     def __init__(self, id, description, start, end, private, creator, type, series):
@@ -15,21 +16,23 @@ class Event(object):
         c = conn.cursor()
         c.execute("INSERT INTO EVENT (ID, DESCRIPTION, START_DATE, END_DATE, PRIVATE, FK_CREATOR, FK_TYPE, FK_SERIES) VALUES(?,?,?,?,?,?,?,?)", (self._id,self._description,self._start,self._end,self._private,self._creator,self._type,self._series))
         conn.commit()
-        conn.close()
         return self
 
     def delete(self):
-        return "Event deleted!"
+        c = conn.cursor()
+        c.execute("DELETE FROM EVENT WHERE ID = ?", (self._id,))
+        conn.commit()
+        return True
 
     def update(self):
         return "Event updated!"
 
     @staticmethod
     def findOneById(id):
+        print("i was called...")
         c = conn.cursor()
-        a = c.execute("SELECT * FROM EVENT WHERE ID = ?", (id,))
+        c.execute("SELECT * FROM EVENT WHERE ID = ?", (id,))
         b = c.fetchone()
-        c.close()
 
         if b != None:
             return Event(b[0],b[1],b[2],b[3],b[4],b[5],b[6],b[7])
@@ -41,3 +44,16 @@ class Event(object):
 
 class EventNotFoundException(Exception):
     pass
+
+
+class DBUtil():
+
+    result = None
+
+    @staticmethod
+    def exec(callback, *args):
+        conn = sqlite3.connect("develop.db")
+        result = callback(*args)
+        conn.close()
+
+        return result

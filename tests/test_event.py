@@ -4,19 +4,24 @@ from jarpis.event import *
 
 
 class EventTest(unittest.TestCase):
+    object = None
+
+    def setUp(self):
+        self.object = Event(-1000, "Party", time.time(), time.time(), True, 1, 1, None)
+
     def test_create_event(self):
-
-        object = Event(1, "Party", time.time(), time.time(), True, 1, 1, None)
-        object = object.create()
-
-        if object._id.__eq__("1") and object._private.__eq__(True):
-            assert True
-        else:
-            assert False
+        eventObject = DBUtil.exec(self.object.create)
+        self.assertEqual(eventObject._id, -1000)
+        self.assertEqual(eventObject._private, True)
 
     def test_event_find_by_id(self):
-        self.assertIsNotNone(Event.findOneById(1))
+        DBUtil.exec(self.object.create)
+        DBUtil.exec(Event.findOneById, (-1000))
 
     def test_event_not_found_by_id(self):
+        DBUtil.exec(self.object.create)
         with self.assertRaises(EventNotFoundException):
-            Event.findOneById(2)
+            DBUtil.exec(Event.findOneById, (-1001))
+
+    def tearDown(self):
+        DBUtil.exec(self.object.delete)
