@@ -7,9 +7,7 @@ class BasicTestSuite(unittest.TestCase):
     def test_event_create(self):
         object = event.Event(1,"Party", time.time(), time.time(), True, 1, 1, None);
 
-        print(object.create())
-
-        if object.create().__eq__("Event created!"):
+        if object.create()._id.__eq__("1") and object.create()._private.__eq__(True):
             assert True
         else:
             assert False
