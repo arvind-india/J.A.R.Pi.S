@@ -29,7 +29,7 @@ class CalendarTest(unittest.TestCase):
             DBUtil.exec(obj.create, [])
 
     def test_get_events_by_date(self):
-        cal = Calendar(self.currentTime - datetime.timedelta(seconds=10), None)
+        cal = Calendar(self.currentTime - datetime.timedelta(seconds=1), None)
         self.assertEqual(len(cal.getEvents()), 5)
 
     def tearDown(self):

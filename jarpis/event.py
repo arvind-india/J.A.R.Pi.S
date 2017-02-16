@@ -42,7 +42,7 @@ class Event(object):
         c.execute("SELECT * FROM EVENT WHERE ID = ?", (id,))
         b = c.fetchone()
 
-        if b is None:
+        if b is not None:
             return Event.fromResultToObject(b)
 
         raise EventNotFoundException("No Event found with given ID: %s" % (id))
