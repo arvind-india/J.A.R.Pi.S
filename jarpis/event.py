@@ -14,6 +14,10 @@ class Event(object):
         self._type = type
         self._series = series
 
+    @staticmethod
+    def fromResultToObject(obj):
+        return Event(obj[0], obj[1], obj[2], obj[3], obj[4], obj[5], obj[6], obj[7])
+
     def create(self):
         c = conn.cursor()
         c.execute(
@@ -34,15 +38,25 @@ class Event(object):
 
     @staticmethod
     def findOneById(id):
-        print("i was called...")
         c = conn.cursor()
         c.execute("SELECT * FROM EVENT WHERE ID = ?", (id,))
         b = c.fetchone()
 
-        if b != None:
-            return Event(b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7])
+        if b is None:
+            return Event.fromResultToObject(b)
 
         raise EventNotFoundException("No Event found with given ID: %s" % (id))
+
+    @staticmethod
+    def findEventsByDate(from_date, to_date):
+        c = conn.cursor()
+        c.execute("SELECT * FROM EVENT WHERE start_date > ? AND end_date < ?", (from_date, to_date,))
+
+        resultList = []
+        for obj in c.fetchall():
+            resultList.append(Event.fromResultToObject(obj))
+
+        return resultList
 
     def __repr__(self, *args, **kwargs):
         return "ID=%s, Description=%s, START=%s, END=%s, PRIVATE=%s, CREATOR=%s, TYPE=%s, SERIES=%s, SUPER=%s" % (
@@ -58,10 +72,10 @@ class DBUtil():
     result = None
 
     @staticmethod
-    def exec(callback, *args):
+    def exec(function, params):
         global conn
         conn = sqlite3.connect("develop.db")
-        result = callback(*args)
+        result = function(*params)
         conn.close()
 
         return result
