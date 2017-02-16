@@ -7,6 +7,7 @@ class EventTest(unittest.TestCase):
     object = None
 
     def setUp(self):
+        DBUtil.exec(Event.createEventTable, [])
         self.object = Event(-1000, "Party", time.time(), time.time(), True, 1, 1, None)
 
     def test_create_event(self):
@@ -24,4 +25,4 @@ class EventTest(unittest.TestCase):
             DBUtil.exec(Event.findOneById, [-1001])
 
     def tearDown(self):
-        DBUtil.exec(self.object.delete, [])
+        DBUtil.exec(Event.dropEventTable,[])

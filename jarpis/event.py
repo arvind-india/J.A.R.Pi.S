@@ -58,6 +58,18 @@ class Event(object):
 
         return resultList
 
+    @staticmethod
+    def createEventTable():
+        c = conn.cursor()
+        c.execute("CREATE TABLE EVENT(ID INTEGER,DESCRIPTION INTEGER,START_DATE TEXT,END_DATE TEXT,PRIVATE INTEGER,FK_CREATOR INTEGER,FK_TYPE INTEGER,FK_SERIES INTEGER)")
+        conn.commit()
+
+    @staticmethod
+    def dropEventTable():
+        c = conn.cursor()
+        c.execute("DROP TABLE EVENT")
+        conn.commit()
+
     def __repr__(self, *args, **kwargs):
         return "ID=%s, Description=%s, START=%s, END=%s, PRIVATE=%s, CREATOR=%s, TYPE=%s, SERIES=%s, SUPER=%s" % (
             self._id, self._description, self._start, self._end, self._private, self._creator, self._type, self._series,

@@ -9,6 +9,7 @@ class CalendarTest(unittest.TestCase):
     currentTime = datetime.datetime.now() - datetime.timedelta(hours=2)
 
     def setUp(self):
+        DBUtil.exec(Event.createEventTable, [])
         self.objects.append(
             Event(-1001, "Gute Party", self.currentTime, self.currentTime + datetime.timedelta(days=3), True, 1, 1,
                   None))
@@ -33,5 +34,7 @@ class CalendarTest(unittest.TestCase):
         self.assertEqual(len(cal.getEvents()), 5)
 
     def tearDown(self):
-        for obj in self.objects:
-            DBUtil.exec(obj.delete, [])
+        # for obj in self.objects:
+        #     DBUtil.exec(obj.delete, [])
+
+        DBUtil.exec(Event.dropEventTable, [])
