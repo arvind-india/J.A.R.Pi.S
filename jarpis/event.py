@@ -2,6 +2,7 @@ import sqlite3
 
 conn = None
 
+
 class Event(object):
     def __init__(self, id, description, start, end, private, creator, type, series):
         self._id = id
@@ -45,8 +46,8 @@ class Event(object):
 
     def __repr__(self, *args, **kwargs):
         return "ID=%s, Description=%s, START=%s, END=%s, PRIVATE=%s, CREATOR=%s, TYPE=%s, SERIES=%s, SUPER=%s" % (
-        self._id, self._description, self._start, self._end, self._private, self._creator, self._type, self._series,
-        super().__repr__())
+            self._id, self._description, self._start, self._end, self._private, self._creator, self._type, self._series,
+            super().__repr__())
 
 
 class EventNotFoundException(Exception):
