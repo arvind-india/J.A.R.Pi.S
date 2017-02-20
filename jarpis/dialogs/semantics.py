@@ -1,27 +1,59 @@
-from parsetron import Grammar, RobustParser
+from parsetron import RobustParser
 
 
 def interpret(self, utterance):
-    def semanticObjectFrom(parseResult):
-        pass
+    for semantic_class in SEMANTIC_CLASSES:
+        parser = RobustParser(semantic_class.grammar)
+        tree, result = parser.parse(utterance)
+        if tree is not None:
+            return semantic_class.fill_slots(result)
 
-    parser = RobustParser(SemanticClass(None).grammar)
-    tree, result = parser.parse(utterance)
+    return None
 
-    return semanticObjectFrom(result)
+SEMANTIC_CLASSES = []
 
 
 class SemanticClass:
     def __init__(self, grammar, type, slots=None):
         if slots is None:
-            slots = []
+            slots = {}
 
         self._grammar = grammar
         self._type = type
         self._slots = slots
+
+    @property
+    def slots(self):
+        return self._slots.values()
+
+    def fill_slots(self, parse_results):
+        for slot in self._slots:
+            parsed_value = parse_results[slot]
+            if parsed_value is not None:
+                slot.value = parsed_value
+
+        return self
 
 
 class Slot:
     def __init__(self, type, name):
         self._type = type
         self._name = name
+        self._value = None
+
+    @property
+    def value(self):
+        return self._value
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def type(self):
+        return self._type
+
+    @value.setter
+    def value(self, value):
+        if value is not None:
+            self._value = value
