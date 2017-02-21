@@ -10,14 +10,22 @@ class Event(object):
         self._start = start
         self._end = end
 
-        if private not in Privacy.levels:
-            id = Privacy.getLevelsIdByName(private)
-            if id is None:
-                self._private = Privacy.getLevelsNameById("public")
+## WTF VALIDATION STARTS: im open for smarter solutions... ##
+        if private is None:
+            self._private = Privacy.getLevelsIdByName("public")
+        elif isinstance(private, int):
+            name = Privacy.getLevelsNameById(private)
+            if name is not None:
+                self._private = private
             else:
+                raise TypeError("Give privacy level is not valid: %s" % (private))
+        elif isinstance(private, str):
+            id = Privacy.getLevelsIdByName(private)
+            if id is not None:
                 self._private = id
-        else:
-            self._private = private
+            else:
+                raise TypeError("Give privacy level is not valid: %s" % (private))
+## WTF VALIDATION ENDS ##
 
         self._creator = creator
         self._type = type
