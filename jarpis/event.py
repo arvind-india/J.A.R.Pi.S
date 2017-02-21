@@ -84,15 +84,36 @@ class Privacy(object):
     def __init__(self):
         pass
 
-    states = {}
-    states['1'] = "public"
-    states['2'] = "private"
-    states['3'] = "shared"
+    states = {'1':'public', '2':'private','3':'shared'}
+
+    @staticmethod
+    def getTypeIdByName(name):
+        c = conn.cursor()
+        c.execute("SELECT * FROM PRIVACY WHERE TYPE = ?", (name,))
+        state = c.fetchone()
+        if state is not None:
+            return state[0]
+
+        return None
+
+    @staticmethod
+    def getTypeNameById(id):
+        c = conn.cursor()
+        c.execute("SELECT * FROM PRIVACY WHERE ID = ?", (id,))
+        state = c.fetchone()
+        if state is not None:
+            return state[1]
+
+        return None
 
     @staticmethod
     def createPrivacyTable():
         c = conn.cursor()
         c.execute("CREATE TABLE PRIVACY(ID INT PRIMARY KEY, TYPE TEXT);")
+
+        for key in Privacy.states:
+            c.execute("INSERT INTO PRIVACY VALUES(?,?)", (key, Privacy.states[key]))
+
         conn.commit()
 
     @staticmethod
