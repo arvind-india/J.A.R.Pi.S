@@ -9,7 +9,16 @@ class Event(object):
         self._description = description
         self._start = start
         self._end = end
-        self._private = private
+
+        if private not in Privacy.levels:
+            id = Privacy.getLevelsIdByName(private)
+            if id is None:
+                self._private = Privacy.getLevelsNameById("public")
+            else:
+                self._private = id
+        else:
+            self._private = private
+
         self._creator = creator
         self._type = type
         self._series = series
@@ -61,13 +70,20 @@ class Event(object):
     @staticmethod
     def createEventTable():
         c = conn.cursor()
-        c.execute("CREATE TABLE EVENT(ID INTEGER,DESCRIPTION INTEGER,START_DATE TEXT,END_DATE TEXT,PRIVATE INTEGER,FK_CREATOR INTEGER,FK_TYPE INTEGER,FK_SERIES INTEGER)")
+        try:
+            c.execute("CREATE TABLE EVENT(ID INTEGER,DESCRIPTION INTEGER,START_DATE TEXT,END_DATE TEXT,PRIVATE INTEGER,FK_CREATOR INTEGER,FK_TYPE INTEGER,FK_SERIES INTEGER)")
+        except sqlite3.OperationalError as err:
+            print("CREATE TBALE WARNING: {0}".format(err))
+
         conn.commit()
 
     @staticmethod
     def dropEventTable():
         c = conn.cursor()
-        c.execute("DROP TABLE EVENT")
+        try:
+            c.execute("DROP TABLE EVENT")
+        except sqlite3.OperationalError as err:
+            print("DROP TBALE WARNING: {0}".format(err))
         conn.commit()
 
     def __repr__(self, *args, **kwargs):
@@ -84,46 +100,50 @@ class Privacy(object):
     def __init__(self):
         pass
 
-    states = {'1':'public', '2':'private','3':'shared'}
+    levels = {1:'public', 2:'private',3:'shared'}
 
     @staticmethod
-    def getTypeIdByName(name):
-        c = conn.cursor()
-        c.execute("SELECT * FROM PRIVACY WHERE TYPE = ?", (name,))
-        state = c.fetchone()
-        if state is not None:
-            return state[0]
+    def getLevelsIdByName(name):
+        for level in Privacy.levels:
+            if Privacy.levels[level] == name:
+                return level
 
         return None
 
     @staticmethod
-    def getTypeNameById(id):
-        c = conn.cursor()
-        c.execute("SELECT * FROM PRIVACY WHERE ID = ?", (id,))
-        state = c.fetchone()
-        if state is not None:
-            return state[1]
-
-        return None
+    def getLevelsNameById(id):
+        try:
+            return Privacy.levels[id]
+        except KeyError:
+            return None
 
     @staticmethod
     def createPrivacyTable():
         c = conn.cursor()
-        c.execute("CREATE TABLE PRIVACY(ID INT PRIMARY KEY, TYPE TEXT);")
 
-        for key in Privacy.states:
-            c.execute("INSERT INTO PRIVACY VALUES(?,?)", (key, Privacy.states[key]))
+        try:
+            c.execute("CREATE TABLE PRIVACY(ID INT PRIMARY KEY, LEVEL TEXT);")
+        except sqlite3.OperationalError as err:
+            print("CREATE TBALE WARNING: {0}".format(err))
+
+        for key in Privacy.levels:
+            c.execute("INSERT INTO PRIVACY VALUES(?,?)", (key, Privacy.levels[key]))
 
         conn.commit()
 
     @staticmethod
     def dropPrivacyTable():
         c = conn.cursor()
-        c.execute("DROP TABLE PRIVACY")
+
+        try:
+            c.execute("DROP TABLE PRIVACY")
+        except sqlite3.OperationalError as err:
+            print("DROP TBALE WARNING: {0}".format(err))
+
         conn.commit()
 
     def __repr__(self):
-        return "States: %s" % (self.states)
+        return "States: %s" % (self.levels)
 
 
 class DBUtil():

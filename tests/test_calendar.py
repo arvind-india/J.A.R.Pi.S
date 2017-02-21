@@ -11,19 +11,19 @@ class CalendarTest(unittest.TestCase):
     def setUp(self):
         TestDBUtil.exec(Event.createEventTable, [])
         self.objects.append(
-            Event(-1001, "Gute Party", self.currentTime, self.currentTime + datetime.timedelta(days=3), True, 1, 1,
+            Event(-1001, "Gute Party", self.currentTime, self.currentTime + datetime.timedelta(days=3), "public", 1, 1,
                   None))
         self.objects.append(
-            Event(-1002, "Beste Party", self.currentTime, self.currentTime + datetime.timedelta(days=2), True, 1, 1,
+            Event(-1002, "Beste Party", self.currentTime, self.currentTime + datetime.timedelta(days=2), "private", 1, 1,
                   None))
         self.objects.append(
-            Event(-1003, "Schlechte Party", self.currentTime, self.currentTime + datetime.timedelta(days=1), True, 1, 1,
+            Event(-1003, "Schlechte Party", self.currentTime, self.currentTime + datetime.timedelta(days=1), 1, 1, 1,
                   None))
         self.objects.append(
-            Event(-1004, "Mega Party", self.currentTime, self.currentTime + datetime.timedelta(days=4), True, 1, 1,
+            Event(-1004, "Mega Party", self.currentTime, self.currentTime + datetime.timedelta(days=4), 2, 1, 1,
                   None))
         self.objects.append(
-            Event(-1005, "Tolle Party", self.currentTime, (self.currentTime + datetime.timedelta(days=6)), True, 1, 1,
+            Event(-1005, "Tolle Party", self.currentTime, (self.currentTime + datetime.timedelta(days=6)), 3, 1, 1,
                   None))
 
         for obj in self.objects:
