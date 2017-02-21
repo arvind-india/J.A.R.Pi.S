@@ -80,6 +80,31 @@ class EventNotFoundException(Exception):
     pass
 
 
+class Privacy(object):
+    def __init__(self):
+        pass
+
+    states = {}
+    states['1'] = "public"
+    states['2'] = "private"
+    states['3'] = "shared"
+
+    @staticmethod
+    def createPrivacyTable():
+        c = conn.cursor()
+        c.execute("CREATE TABLE PRIVACY(ID INT PRIMARY KEY, TYPE TEXT);")
+        conn.commit()
+
+    @staticmethod
+    def dropPrivacyTable():
+        c = conn.cursor()
+        c.execute("DROP TABLE PRIVACY")
+        conn.commit()
+
+    def __repr__(self):
+        return "States: %s" % (self.states)
+
+
 class DBUtil():
     result = None
 
@@ -87,6 +112,19 @@ class DBUtil():
     def exec(function, params):
         global conn
         conn = sqlite3.connect("develop.db")
+        result = function(*params)
+        conn.close()
+
+        return result
+
+
+class TestDBUtil():
+    result = None
+
+    @staticmethod
+    def exec(function, params):
+        global conn
+        conn = sqlite3.connect("test.db")
         result = function(*params)
         conn.close()
 
