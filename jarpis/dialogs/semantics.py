@@ -28,7 +28,7 @@ class SemanticClass:
 
     @property
     def slots(self):
-        return self._slots.values()
+        return self._slots
 
     def fill_slots(self, parse_results):
         for slot in self._slots:
