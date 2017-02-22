@@ -27,12 +27,16 @@ class SemanticClass:
         self._slots = slots
 
     @property
+    def grammar(self):
+        return self._grammar
+
+    @property
     def slots(self):
         return self._slots
 
     def fill_slots(self, parse_results):
-        for slot in self._slots:
-            parsed_value = parse_results[slot]
+        for name, slot in self._slots.iteritems():
+            parsed_value = parse_results[name]
             if parsed_value is not None:
                 slot.value = parsed_value
 
@@ -44,6 +48,9 @@ class Slot:
         self._type = type
         self._name = name
         self._value = None
+
+    def __repr__(self):
+        return "name=%s, type=%s, value=%s" % (self.name, self.type, self.value)
 
     @property
     def value(self):
