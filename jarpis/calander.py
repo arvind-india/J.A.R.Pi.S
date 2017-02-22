@@ -14,8 +14,6 @@ class Calendar(object):
         else:
             self.to_date = to_date
 
-        print("class calendar was called")
-
     def getEvents(self):
         list = DBUtil.exec(Event.findEventsByDate, (self.from_date, self.to_date,))
 
