@@ -17,7 +17,8 @@ class EventTest(unittest.TestCase):
 
     def test_event_find_by_id(self):
         DBUtil.exec(self.object.create, [])
-        DBUtil.exec(Event.findOneById, [-1000])
+        event = DBUtil.exec(Event.findOneById, [-1000])
+        self.assertIsNotNone(event)
 
     def test_event_not_found_by_id(self):
         DBUtil.exec(self.object.create, [])
