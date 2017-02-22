@@ -1,16 +1,20 @@
 from parsetron import RobustParser
 
 
-def interpret(self, utterance):
-    for semantic_class in SEMANTIC_CLASSES:
-        parser = RobustParser(semantic_class.grammar)
-        tree, result = parser.parse(utterance)
-        if tree is not None:
-            return semantic_class.fill_slots(result)
+class SemanticInterpreter:
+    def __init__(self, semantic_classes=None):
+        if semantic_classes is None:
+            semantic_classes = []
+        self._semantic_classes = semantic_classes
 
-    return None
+    def interpret(self, utterance):
+        for semantic_class in self._semantic_classes:
+            parser = RobustParser(semantic_class.grammar)
+            tree, result = parser.parse(utterance)
+            if tree is not None:
+                return semantic_class.fill_slots(result)
 
-SEMANTIC_CLASSES = []
+        return None
 
 
 class SemanticClass:
