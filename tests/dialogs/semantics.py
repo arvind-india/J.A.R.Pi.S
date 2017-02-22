@@ -8,10 +8,9 @@ class An_utterance_can_be_parsed_into_a_semantic_class_correctly(unittest.TestCa
     def setUp(self):
         class TestGrammar(Grammar):
             language = Set(["Java", "JavaScript", "Python", "C#"])
-            no = Regex("not")
             adjective = Set(["cool", "fun", "horrible"])
 
-            utterance = language + "is" + Optional(no) + adjective
+            utterance = language + adjective
             GOAL = utterance
 
         self._grammar = TestGrammar()
@@ -19,7 +18,7 @@ class An_utterance_can_be_parsed_into_a_semantic_class_correctly(unittest.TestCa
     def tearDown(self):
         del self._grammar
 
-    def if_it_contains_the_necessary_keywords(self):
+    def test_if_it_contains_the_necessary_keywords(self):
         # arrange
         slots = {"language": Slot(None, "language"), "adjective": Slot(None, "adjective")}
         semantic_class = SemanticClass(self._grammar, "test", slots)
