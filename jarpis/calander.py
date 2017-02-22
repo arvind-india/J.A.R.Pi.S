@@ -25,4 +25,4 @@ class Calendar(object):
         return list
 
     def __repr__(self):
-        return "Calendar from XX to XX"
+        return "Calendar from %s to %s" % (self.from_date, self.to_date)
