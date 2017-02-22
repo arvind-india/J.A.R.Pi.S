@@ -135,7 +135,7 @@ crashlytics-build.properties
 fabric.properties
 
 
-.idea/*
-.vscode/*
+.idea/**
+.vscode/**
 .vscode/
 develop.db
