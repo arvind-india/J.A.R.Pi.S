@@ -34,7 +34,4 @@ class CalendarTest(unittest.TestCase):
         self.assertEqual(len(cal.getEvents()), 5)
 
     def tearDown(self):
-        # for obj in self.objects:
-        #     DBUtil.exec(obj.delete, [])
-
         DBUtil.exec(Event.dropEventTable, [])
