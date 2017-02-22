@@ -1,0 +1,36 @@
+from __future__ import absolute_import
+import unittest
+from jarpis.calander import *
+
+
+class CalendarTest(unittest.TestCase):
+    objects = []
+    currentTime = datetime.datetime.now() - datetime.timedelta(hours=2)
+
+    def setUp(self):
+        TestDBUtil.execute(Event.createEventTable, [])
+        self.objects.append(
+            Event(-1001, "Gute Party", self.currentTime, self.currentTime + datetime.timedelta(days=3), "public", 1, 1,
+                  None))
+        self.objects.append(
+            Event(-1002, "Beste Party", self.currentTime, self.currentTime + datetime.timedelta(days=2), "private", 1, 1,
+                  None))
+        self.objects.append(
+            Event(-1003, "Schlechte Party", self.currentTime, self.currentTime + datetime.timedelta(days=1), 1, 1, 1,
+                  None))
+        self.objects.append(
+            Event(-1004, "Mega Party", self.currentTime, self.currentTime + datetime.timedelta(days=4), 2, 1, 1,
+                  None))
+        self.objects.append(
+            Event(-1005, "Tolle Party", self.currentTime, (self.currentTime + datetime.timedelta(days=6)), 3, 1, 1,
+                  None))
+
+        for obj in self.objects:
+            TestDBUtil.execute(obj.create, [])
+
+    def test_get_events_by_date(self):
+        cal = Calendar(self.currentTime - datetime.timedelta(seconds=1), None)
+        self.assertEqual(len(TestDBUtil.execute(cal.getEvents, [])), 5)
+
+    def tearDown(self):
+        TestDBUtil.execute(Event.dropEventTable, [])
