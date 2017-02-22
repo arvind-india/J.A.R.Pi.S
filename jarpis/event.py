@@ -97,7 +97,7 @@ class Event(object):
     def __repr__(self, *args, **kwargs):
         return "ID=%s, Description=%s, START=%s, END=%s, PRIVATE=%s, CREATOR=%s, TYPE=%s, SERIES=%s, SUPER=%s" % (
             self._id, self._description, self._start, self._end, self._private, self._creator, self._type, self._series,
-            super().__repr__())
+            super(*args, **kwargs).__repr__())
 
 
 class EventNotFoundException(Exception):
@@ -158,7 +158,7 @@ class DBUtil():
     result = None
 
     @staticmethod
-    def exec(function, params):
+    def execute(function, params):
         global conn
         conn = sqlite3.connect("develop.db")
         result = function(*params)
@@ -171,7 +171,7 @@ class TestDBUtil():
     result = None
 
     @staticmethod
-    def exec(function, params):
+    def execute(function, params):
         global conn
         conn = sqlite3.connect("test.db")
         result = function(*params)

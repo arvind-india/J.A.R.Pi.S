@@ -1,6 +1,5 @@
+from __future__ import absolute_import
 import unittest
-import datetime
-from jarpis.event import *
 from jarpis.calander import *
 
 
@@ -9,7 +8,7 @@ class CalendarTest(unittest.TestCase):
     currentTime = datetime.datetime.now() - datetime.timedelta(hours=2)
 
     def setUp(self):
-        TestDBUtil.exec(Event.createEventTable, [])
+        TestDBUtil.execute(Event.createEventTable, [])
         self.objects.append(
             Event(-1001, "Gute Party", self.currentTime, self.currentTime + datetime.timedelta(days=3), "public", 1, 1,
                   None))
@@ -27,11 +26,11 @@ class CalendarTest(unittest.TestCase):
                   None))
 
         for obj in self.objects:
-            TestDBUtil.exec(obj.create, [])
+            TestDBUtil.execute(obj.create, [])
 
     def test_get_events_by_date(self):
         cal = Calendar(self.currentTime - datetime.timedelta(seconds=1), None)
-        self.assertEqual(len(TestDBUtil.exec(cal.getEvents, [])), 5)
+        self.assertEqual(len(TestDBUtil.execute(cal.getEvents, [])), 5)
 
     def tearDown(self):
-        TestDBUtil.exec(Event.dropEventTable, [])
+        TestDBUtil.execute(Event.dropEventTable, [])
