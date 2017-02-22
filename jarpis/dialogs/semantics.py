@@ -8,6 +8,11 @@ class SemanticInterpreter:
         self._semantic_classes = semantic_classes
 
     def interpret(self, utterance):
+        if utterance is None:
+            return None
+        if not utterance.strip():
+            return None
+
         for semantic_class in self._semantic_classes:
             parser = RobustParser(semantic_class.grammar)
             tree, result = parser.parse(utterance)
