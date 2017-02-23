@@ -136,4 +136,5 @@ fabric.properties
 
 
 .idea/*
+.vscode/**
 develop.db
