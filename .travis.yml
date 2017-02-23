@@ -9,6 +9,5 @@ branches:
     only:
     - master
     - develop
-    - project-configuration
 notifications:
     slack: studiarbeit-jarpis:1hZhWcJYccrmsc3UtS7J07aE
