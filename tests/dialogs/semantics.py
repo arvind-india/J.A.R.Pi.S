@@ -1,10 +1,11 @@
 from __future__ import absolute_import
 import unittest
-from parsetron import Grammar, Set, Regex, Optional
+from parsetron import Grammar, Set
 from jarpis.dialogs.semantics import SemanticInterpreter, SemanticClass, Slot
 
 
 class The_interpreter_can_instantiate_a_semantic_object(unittest.TestCase):
+
     def setUp(self):
         class TestGrammar(Grammar):
             language = Set(["Java", "JavaScript", "Python", "C#"])
@@ -20,7 +21,8 @@ class The_interpreter_can_instantiate_a_semantic_object(unittest.TestCase):
 
     def test_if_the_utterance_contains_the_necessary_keywords(self):
         # arrange
-        slots = {"language": Slot(None, "language"), "adjective": Slot(None, "adjective")}
+        slots = {"language": Slot(None, "language"),
+                 "adjective": Slot(None, "adjective")}
         semantic_class = SemanticClass(self._grammar, "test", slots)
         interpreter = SemanticInterpreter([semantic_class])
         utterance = "Python is cool"
@@ -36,6 +38,7 @@ class The_interpreter_can_instantiate_a_semantic_object(unittest.TestCase):
 
 
 class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
+
     def setUp(self):
         class TestGrammar(Grammar):
             language = Set(["Java", "JavaScript", "Python", "C#"])
