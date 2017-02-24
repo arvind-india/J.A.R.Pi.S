@@ -4,6 +4,7 @@ class EventMediator:
         self._eventHandlers = {}
 
     def register(self, event, handler):
+        # TODO try "value = value | literal" syntax
         if event not in self._eventHandlers:
             self._eventHandlers[event] = []
 
@@ -15,7 +16,7 @@ class EventMediator:
 
         self._eventHandlers[event].remove(handler)
 
-    def broadcast(self, event, **kwargs):
+    def publish(self, event, **kwargs):
         if event not in self._eventHandlers:
             return
 
