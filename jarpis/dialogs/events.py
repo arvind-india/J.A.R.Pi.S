@@ -4,9 +4,15 @@ class EventMediator:
         self._eventHandlers = {}
 
     def register(self, event, handler):
+        if handler is None:
+            raise TypeError()
+
         # TODO try "value = value | literal" syntax
         if event not in self._eventHandlers:
             self._eventHandlers[event] = []
+
+        if handler in self._eventHandlers[event]:
+            raise DuplicateEventHandler()
 
         self._eventHandlers[event].append(handler)
 
@@ -24,3 +30,7 @@ class EventMediator:
         # there's an appropriate 'success' event
         for handler in self._eventHandlers[event]:
             handler(kwargs)
+
+
+class DuplicateEventHandler(Exception):
+    pass
