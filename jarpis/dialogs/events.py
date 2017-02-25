@@ -17,7 +17,13 @@ class EventMediator:
         self._eventHandlers[event].append(handler)
 
     def unregister(self, event, handler):
+        if event is None or handler is None:
+            raise TypeError()
+
         if event not in self._eventHandlers:
+            return
+
+        if handler not in self._eventHandlers[event]:
             return
 
         self._eventHandlers[event].remove(handler)

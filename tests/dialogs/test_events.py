@@ -130,7 +130,7 @@ class An_event_handler_can_be_unregistered(unittest.TestCase):
         self.assertEqual(event_not_known_before, event_not_known_after)
         self.assertNotIn("onUnitTest", self._mediator._eventHandlers)
 
-    def test_if_the_specified_handler_is_not_registered_for_the_target_event(self):
+    def test_if_the_handler_is_not_registered_for_the_target_event(self):
         # arrange
         first_handler = Mock()
         second_handler = Mock()
@@ -161,10 +161,19 @@ class An_event_handler_fails_to_unregister(unittest.TestCase):
         del self._mediator
 
     def test_if_the_event_argument_is_None(self):
-        self.fail()
+        # arrange
+        handler = Mock()
+        self._mediator.register("onUnitTest", handler)
+
+        # act and arrange
+        with self.assertRaises(TypeError):
+            self._mediator.unregister(None, handler)
 
     def test_if_the_handler_argument_is_None(self):
-        self.fail()
+        # arrange
+        handler = Mock()
+        self._mediator.register("onUnitTest", handler)
 
-    def test_if_the_handler_is_not_registered_for_the_target_event(self):
-        self.fail()
+        # act and arrange
+        with self.assertRaises(TypeError):
+            self._mediator.unregister("onUnitTest", None)
