@@ -28,7 +28,7 @@ class EventMediator:
 
         self._eventHandlers[event].remove(handler)
 
-    def publish(self, event, **with_kwargs):
+    def publish(self, event, *with_args, ** with_kwargs):
         if event is None:
             raise TypeError()
 
@@ -38,7 +38,7 @@ class EventMediator:
         # this will also be the perfect point to trigger a web view update if
         # there's an appropriate 'success' event
         for callHandler in self._eventHandlers[event]:
-            callHandler(**with_kwargs)
+            callHandler(*with_args, **with_kwargs)
 
 
 class DuplicateEventHandler(Exception):
