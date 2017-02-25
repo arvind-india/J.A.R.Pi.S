@@ -71,7 +71,15 @@ class An_event_handler_fails_to_register(unittest.TestCase):
     def tearDown(self):
         del self._mediator
 
-    def test_if_it_is_None(self):
+    def test_if_the_event_argument_is_None(self):
+        # arrange
+        handler = Mock()
+
+        # act and assert
+        with self.assertRaises(TypeError):
+            self._mediator.register(None, handler)
+
+    def test_if_the_handler_argument_is_None(self):
         # arrange
         handler = None
 
@@ -87,3 +95,27 @@ class An_event_handler_fails_to_register(unittest.TestCase):
         # act and assert
         with self.assertRaises(DuplicateEventHandler):
             self._mediator.register("onUnitTest", handler)
+
+
+class An_event_handler_can_be_unregistered(unittest.TestCase):
+
+    def setUp(self):
+        self._mediator = EventMediator()
+
+    def tearDown(self):
+        del self._mediator
+
+    def test_if_the_handler_was_registered_before(self):
+        # arrange
+        handler = Mock()
+        self._mediator.register("onUnitTest", handler)
+
+        # act
+        self._mediator.unregister("onUnitTest", handler)
+
+        # assert
+        self.assertEqual(0, len(self._mediator._eventHandlers["onUnitTest"]))
+
+
+class An_event_handler_fails_to_unregister(unittest.TestCase):
+    pass

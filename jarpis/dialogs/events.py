@@ -4,7 +4,7 @@ class EventMediator:
         self._eventHandlers = {}
 
     def register(self, event, handler):
-        if handler is None:
+        if event is None or handler is None:
             raise TypeError()
 
         # TODO try "value = value | literal" syntax
