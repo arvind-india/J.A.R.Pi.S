@@ -28,14 +28,17 @@ class EventMediator:
 
         self._eventHandlers[event].remove(handler)
 
-    def publish(self, event, **kwargs):
+    def publish(self, event, **with_kwargs):
+        if event is None:
+            raise TypeError()
+
         if event not in self._eventHandlers:
             return
 
         # this will also be the perfect point to trigger a web view update if
         # there's an appropriate 'success' event
-        for handler in self._eventHandlers[event]:
-            handler(kwargs)
+        for callHandler in self._eventHandlers[event]:
+            callHandler(**with_kwargs)
 
 
 class DuplicateEventHandler(Exception):

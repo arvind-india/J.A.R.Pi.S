@@ -177,3 +177,104 @@ class An_event_handler_fails_to_unregister(unittest.TestCase):
         # act and arrange
         with self.assertRaises(TypeError):
             self._mediator.unregister("onUnitTest", None)
+
+
+class Publishing_an_event_succeeds(unittest.TestCase):
+
+    def setUp(self):
+        self._mediator = EventMediator()
+
+    def tearDown(self):
+        del self._mediator
+
+    def test_if_there_is_no_known_event_in_the_mediator(self):
+        # arrange
+
+        # act
+        self._mediator.publish("onUnknownUnitTest")
+
+        # no explicit assert fits
+
+    def test_if_there_are_no_handlers_registered(self):
+        # arrange
+        handler = Mock()
+        self._mediator.register("onUnitTest", handler)
+        self._mediator.unregister("onUnitTest", handler)
+
+        # act
+        self._mediator.publish("onUnitTest")
+
+        # assert
+        handler.assert_not_called()
+
+    def test_if_there_is_one_handler_registered_and_it_is_called_without_arguments(self):
+        # arrange
+        handler = Mock()
+        self._mediator.register("onUnitTest", handler)
+
+        # act
+        self._mediator.publish("onUnitTest")
+
+        # assert
+        handler.assert_called_once()
+
+    def test_if_there_is_one_handler_registered_and_it_is_called_with_arguments(self):
+        # arrange
+        handler = Mock()
+        self._mediator.register("onUnitTest", handler)
+
+        # act
+        self._mediator.publish(
+            "onUnitTest", argument1="success1", argument2="success2")
+
+        # assert
+        handler.assert_called_once_with(
+            argument1="success1", argument2="success2")
+
+    def test_if_there_are_multiple_handlers_registered_and_they_are_all_called_without_arguments(self):
+        # arrange
+        handlers = [Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()]
+
+        for handler in handlers:
+            self._mediator.register("onUnitTest", handler)
+
+        # act
+        self._mediator.publish("onUnitTest")
+
+        # assert
+        for handler in handlers:
+            handler.assert_called_once()
+
+    def test_if_there_are_multiple_handlers_registered_and_they_are_all_called_with_arguments(self):
+        # arrange
+        handlers = [Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()]
+
+        for handler in handlers:
+            self._mediator.register("onUnitTest", handler)
+
+        # act
+        self._mediator.publish(
+            "onUnitTest", argument1="success1", argument2="success2")
+
+        # assert
+        for handler in handlers:
+            handler.assert_called_once_with(
+                argument1="success1", argument2="success2")
+
+
+class Publishing_an_event_fails(unittest.TestCase):
+
+    def setUp(self):
+        self._mediator = EventMediator()
+
+    def tearDown(self):
+        del self._mediator
+
+    def test_if_the_event_argument_is_None(self):
+        # arrange
+        handler = Mock()
+        self._mediator.register("onUnitTest", handler)
+
+        # act and assert
+        with self.assertRaises(TypeError):
+            self._mediator.publish(None)
