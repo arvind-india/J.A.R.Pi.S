@@ -9,7 +9,24 @@ class Event(object):
         self._description = description
         self._start = start
         self._end = end
-        self._private = private
+
+## WTF VALIDATION STARTS: im open for smarter solutions... ##
+        if private is None:
+            self._private = Privacy.getLevelsIdByName("public")
+        elif isinstance(private, int):
+            name = Privacy.getLevelsNameById(private)
+            if name is not None:
+                self._private = private
+            else:
+                raise TypeError("Give privacy level is not valid: %s" % (private))
+        elif isinstance(private, str):
+            id = Privacy.getLevelsIdByName(private)
+            if id is not None:
+                self._private = id
+            else:
+                raise TypeError("Give privacy level is not valid: %s" % (private))
+## WTF VALIDATION ENDS ##
+
         self._creator = creator
         self._type = type
         self._series = series
@@ -61,32 +78,102 @@ class Event(object):
     @staticmethod
     def createEventTable():
         c = conn.cursor()
-        c.execute("CREATE TABLE EVENT(ID INTEGER,DESCRIPTION INTEGER,START_DATE TEXT,END_DATE TEXT,PRIVATE INTEGER,FK_CREATOR INTEGER,FK_TYPE INTEGER,FK_SERIES INTEGER)")
+        try:
+            c.execute("CREATE TABLE EVENT(ID INTEGER,DESCRIPTION INTEGER,START_DATE TEXT,END_DATE TEXT,PRIVATE INTEGER,FK_CREATOR INTEGER,FK_TYPE INTEGER,FK_SERIES INTEGER)")
+        except sqlite3.OperationalError as err:
+            print("CREATE TBALE WARNING: {0}".format(err))
+
         conn.commit()
 
     @staticmethod
     def dropEventTable():
         c = conn.cursor()
-        c.execute("DROP TABLE EVENT")
+        try:
+            c.execute("DROP TABLE EVENT")
+        except sqlite3.OperationalError as err:
+            print("DROP TBALE WARNING: {0}".format(err))
         conn.commit()
 
     def __repr__(self, *args, **kwargs):
         return "ID=%s, Description=%s, START=%s, END=%s, PRIVATE=%s, CREATOR=%s, TYPE=%s, SERIES=%s, SUPER=%s" % (
             self._id, self._description, self._start, self._end, self._private, self._creator, self._type, self._series,
-            super().__repr__())
+            super(*args, **kwargs).__repr__())
 
 
 class EventNotFoundException(Exception):
     pass
 
 
+class Privacy(object):
+    def __init__(self):
+        pass
+
+    levels = {1:'public', 2:'private',3:'shared'}
+
+    @staticmethod
+    def getLevelsIdByName(name):
+        for level in Privacy.levels:
+            if Privacy.levels[level] == name:
+                return level
+
+        return None
+
+    @staticmethod
+    def getLevelsNameById(id):
+        try:
+            return Privacy.levels[id]
+        except KeyError:
+            return None
+
+    @staticmethod
+    def createPrivacyTable():
+        c = conn.cursor()
+
+        try:
+            c.execute("CREATE TABLE PRIVACY(ID INT PRIMARY KEY, LEVEL TEXT);")
+        except sqlite3.OperationalError as err:
+            print("CREATE TBALE WARNING: {0}".format(err))
+
+        for key in Privacy.levels:
+            c.execute("INSERT INTO PRIVACY VALUES(?,?)", (key, Privacy.levels[key]))
+
+        conn.commit()
+
+    @staticmethod
+    def dropPrivacyTable():
+        c = conn.cursor()
+
+        try:
+            c.execute("DROP TABLE PRIVACY")
+        except sqlite3.OperationalError as err:
+            print("DROP TBALE WARNING: {0}".format(err))
+
+        conn.commit()
+
+    def __repr__(self):
+        return "States: %s" % (self.levels)
+
+
 class DBUtil():
     result = None
 
     @staticmethod
-    def exec(function, params):
+    def execute(function, params):
         global conn
         conn = sqlite3.connect("develop.db")
+        result = function(*params)
+        conn.close()
+
+        return result
+
+
+class TestDBUtil():
+    result = None
+
+    @staticmethod
+    def execute(function, params):
+        global conn
+        conn = sqlite3.connect("test.db")
         result = function(*params)
         conn.close()
 
