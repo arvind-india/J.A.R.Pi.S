@@ -1,0 +1,13 @@
+language: python
+python:
+    - "2.7"
+install: make init
+script: make test
+git:
+    depth: 3
+branches:
+    only:
+    - master
+    - develop
+notifications:
+    slack: studiarbeit-jarpis:1hZhWcJYccrmsc3UtS7J07aE
