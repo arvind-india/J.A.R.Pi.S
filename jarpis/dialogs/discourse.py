@@ -21,7 +21,7 @@ class DialogManager:
         jarpis.dialogs.communication.register(
             "evaluationFailed", self._semantic_object_evaluation_failed)
         jarpis.dialogs.communication.register(
-            "evaluationFailed", self._invalid_semantic_object_information)
+            "invalidInformation", self._invalid_semantic_object_information)
 
     def _insert_in_discourse_tree(self, semantic_object):
         pass
