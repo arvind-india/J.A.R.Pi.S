@@ -9,10 +9,10 @@ class DialogManager:
 
 class DiscourseUnit:
 
-    def __init__(self, evaluation_strategy, semantic_object_type, children):
+    def __init__(self, evaluation_strategy, entity_type, children):
         self._evaluation_strategy = evaluation_strategy
-        self._is_evaluated = False
-        self._type = semantic_object_type
+        self._is_resolved = False
+        self._type = entity_type
         self._children = children
         self._semantic_object = None
 
@@ -24,7 +24,7 @@ class DiscourseUnit:
         evaluated and can be semantically bound to the domain object
         '''
         for child_unit in self._children:
-            if not child_unit._is_evaluated:
+            if not child_unit._is_resolved:
                 child_unit.evaluate()
 
         if self.semantic_object is not None:
