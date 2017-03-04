@@ -3,13 +3,17 @@ import jarpis.dialogs
 
 class DialogManager:
 
-    def __init__(self):
+    def __init__(self, discourse_trees=None):
+        if discourse_trees is None:
+            discourse_trees = []
+
+        self._discourse_trees = discourse_trees
         self._register_events()
 
     def _register_events(self):
         # semantic interpreter events
         jarpis.dialogs.communication.register(
-            "interpretationSuccessfull", self._insert_in_discourse_tree)
+            "interpretationSuccessfull", self._insert_into_discourse_trees)
         jarpis.dialogs.communication.register(
             "nothingToInterpret", self._nothing_to_interpret)
         jarpis.dialogs.communication.register(
@@ -23,8 +27,14 @@ class DialogManager:
         jarpis.dialogs.communication.register(
             "invalidInformation", self._invalid_semantic_object_information)
 
-    def _insert_in_discourse_tree(self, semantic_object):
-        pass
+    def _insert_into_discourse_trees(self, semantic_object):
+        rooted_trees = []
+        for tree in self._discourse_trees:
+            tree.insert(semantic_object)
+            if tree.is_rooted():
+                rooted_trees.append(tree)
+
+        self._rooted_trees = rooted_trees
 
     def _start_semantic_evaluation(self):
         pass
@@ -68,7 +78,12 @@ class DiscourseUnit:
 
 
 class DiscourseTree:
-    pass
+
+    def insert(self, semantic_object):
+        pass
+
+    def is_rooted(self):
+        pass
 
 
 class SemanticEvaluationError(Exception):
