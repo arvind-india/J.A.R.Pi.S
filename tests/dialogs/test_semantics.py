@@ -41,7 +41,7 @@ class The_interpreter_can_instantiate_a_semantic_object(unittest.TestCase):
         handlerMock = Mock(wraps=handler)
 
         self._communication.register(
-            "onSuccessfullInterpretation", handlerMock)
+            "interpretationSuccessfull", handlerMock)
 
         # act
         interpreter.interpret(utterance)
@@ -77,9 +77,9 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
         interpretationSuccessfull = Mock()
         interpretationFinished = Mock()
         self._communication.register(
-            "onSuccessfullInterpretation", interpretationSuccessfull)
+            "interpretationSuccessfull", interpretationSuccessfull)
         self._communication.register(
-            "onInterpretationFinished", interpretationFinished)
+            "interpretationFinished", interpretationFinished)
 
         # act
         interpreter.interpret(utterance)
@@ -96,7 +96,7 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
         interpreter = SemanticInterpreter([semantic_class])
         utterance = ""
         handler = Mock()
-        self._communication.register("onNothingToInterpret", handler)
+        self._communication.register("nothingToInterpret", handler)
 
         # act
         interpreter.interpret(utterance)
@@ -112,7 +112,7 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
         interpreter = SemanticInterpreter([semantic_class])
         utterance = None
         handler = Mock()
-        self._communication.register("onNothingToInterpret", handler)
+        self._communication.register("nothingToInterpret", handler)
 
         # act
         interpreter.interpret(utterance)
