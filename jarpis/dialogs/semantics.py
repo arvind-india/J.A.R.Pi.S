@@ -40,6 +40,10 @@ class SemanticClass:
         self._slots = slots
 
     @property
+    def entity_type(self):
+        return self._type
+
+    @property
     def grammar(self):
         return self._grammar
 
