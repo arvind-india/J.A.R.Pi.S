@@ -13,7 +13,7 @@ class SemanticInterpreter:
         communication = jarpis.dialogs.communication
 
         if utterance is None or not utterance.strip():
-            communication.publish("onNothingToInterpret")
+            communication.publish("nothingToInterpret")
             return
 
         for semantic_class in self._semantic_classes:
@@ -21,12 +21,12 @@ class SemanticInterpreter:
             tree, result = parser.parse(utterance)
             if tree is not None:
                 communication.publish(
-                    "onSuccessfullInterpretation",
+                    "interpretationSuccessfull",
                     semantic_class.fill_slots(result))
 
         # TODO Do we need to explicitly publish an event if no semantic object could be parsed?
         # Need a boolean then to check if any semantic object could be parsed.
-        communication.publish("onInterpretationFinished")
+        communication.publish("interpretationFinished")
 
 
 class SemanticClass:
