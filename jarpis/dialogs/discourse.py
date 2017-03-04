@@ -34,6 +34,13 @@ class DiscourseUnit:
             raise SemanticEvaluationError(
                 "Cannot evaluate semantic object that is None.")
 
+    def resolve(self):
+        self._is_resolved = True
+
+    @property
+    def _is_resolved(self):
+        return self._is_resolved
+
     @property
     def semantic_object(self):
         return self._semantic_object
