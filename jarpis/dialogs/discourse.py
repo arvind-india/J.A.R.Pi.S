@@ -16,24 +16,6 @@ class DiscourseUnit:
         self._children = children
         self._semantic_object = None
 
-    def evaluate(self):
-        '''
-        TODO when is a discourse unit considered to be evaluated?
-        the tree should collapse upwards and children should be removed from
-        their parent. If the root node has no children it is considered to be
-        evaluated and can be semantically bound to the domain object
-        '''
-        for child_unit in self._children:
-            if not child_unit._is_resolved:
-                child_unit.evaluate()
-
-        if self.semantic_object is not None:
-            jarpis.dialogs.communication.publish(
-                "requestEvaluation", self.semantic_object)
-        else:
-            raise SemanticEvaluationError(
-                "Cannot evaluate semantic object that is None.")
-
     def resolve(self):
         self._is_resolved = True
 
