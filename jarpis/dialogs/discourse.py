@@ -17,7 +17,7 @@ class DialogManager:
         jarpis.dialogs.communication.register(
             "nothingToInterpret", self._nothing_to_interpret)
         jarpis.dialogs.communication.register(
-            "interpretationFinished", self._start_semantic_evaluation)
+            "interpretationFinished", self._evaluate_discourse_trees)
 
         # discourse analysis events
         jarpis.dialogs.communication.register(
@@ -36,19 +36,46 @@ class DialogManager:
 
         self._rooted_trees = rooted_trees
 
-    def _start_semantic_evaluation(self):
+    def _evaluate_discourse_trees(self):
+        communication = jarpis.dialogs.communication
         # evaluation algorithm:
 
         # 1 select the best rooted tree
         # 2 get unresolved semantic object from non-empty DU
         # 3 request evaluation for the semantic object
-        # 4 respond to event:
-        #       success -> go to 2.
+        # 4 respond to event (implemented in other handlers):
+        #       success -> go to 2. (or completely repeat?! -> easier to implement)
         #       failure -> error handling
         #       invalid -> error handling
         # 5 handle empty DU (ask user)
+        discourse_tree = self._select_best_discourse_tree()
+        object_to_resolve = None
+        if discourse_tree is not None:
+            object_to_resolve = discourse_tree.get_next_unresolved_semantic_object()
+        else:
+            # request further information
+            return
 
-        pass
+        if object_to_resolve is not None:
+            communication.publish("evaluationRequest", object_to_resolve)
+            return
+        else:
+            empty_discourse_unit = discourse_tree.get_next_unresolved_discourse_unit()
+            # request further information
+            return
+
+    def _select_best_discourse_tree(self):
+        # TODO need some place to reset the _current_discourse_tree after
+        # semantic binding
+        if self._current_discourse_tree is not None:
+            return self._current_discourse_tree
+        else:
+            if len(self._current_discourse_tree) == 0:
+                # TODO is a Nullobject-pattern-like tree an option?
+                return None
+            else:
+                self._current_discourse_tree = self._discourse_trees[0]
+                return self._current_discourse_tree
 
     def _nothing_to_interpret(self):
         pass
@@ -82,6 +109,12 @@ class DiscourseTree:
 
     def is_rooted(self):
         return self._tree_root.semantic_object is not None
+
+    def get_next_unresolved_semantic_object(self):
+        pass
+
+    def get_next_unresolved_discourse_unit(self):
+        pass
 
 
 class DiscourseUnit:
