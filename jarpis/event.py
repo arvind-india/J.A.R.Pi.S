@@ -57,6 +57,7 @@ class Event(object):
     def update(self):
         return "Event updated!"
 
+    #TODO Move this to Calendar Class
     @staticmethod
     def findOneById(id):
         c = conn.cursor()
@@ -68,6 +69,7 @@ class Event(object):
 
         raise EventNotFoundException("No Event found with given ID: %s" % (id))
 
+    #TODO Move this to Calendar Class
     @staticmethod
     def findEventsByDate(from_date, to_date):
         c = conn.cursor()
