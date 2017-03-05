@@ -2,7 +2,6 @@ import sqlite3
 
 conn = None
 
-
 class Event(object):
     def __init__(self, id, description, start, end, private, creator, type, series):
         self._id = id
@@ -28,7 +27,12 @@ class Event(object):
 ## WTF VALIDATION ENDS ##
 
         self._creator = creator
-        self._type = type
+
+        if type is None:
+            self.type = EventType.getTypeIdByName("default")
+        else:
+            self._type = type
+
         self._series = series
 
     @staticmethod
@@ -100,9 +104,62 @@ class Event(object):
             super(*args, **kwargs).__repr__())
 
 
+class Birthday(Event):
+    def __init__(self, id, description, start, end, private, creator, type, series, subject):
+        Event.__init__(self, id, description, start, end, private, creator, type, series)
+        self._subject = subject
+
 class EventNotFoundException(Exception):
     pass
 
+class EventType(object):
+    def __init__(self):
+        pass
+
+    types = {1:'default', 2: 'birthday'}
+
+    @staticmethod
+    def getTypeIdByName(name):
+        for type in EventType.types:
+            if EventType.types[type] == name:
+                return type
+
+        return None
+
+    @staticmethod
+    def getTypeNameById(id):
+        try:
+            return EventType.types[id]
+        except KeyError:
+            return None
+
+    @staticmethod
+    def createEventTypeTable():
+        c = conn.cursor()
+
+        try:
+            c.execute("CREATE TABLE EVENT_TYPE(ID INT PRIMARY KEY, DEFINITION TEXT);")
+        except sqlite3.OperationalError as err:
+            print("CREATE TBALE WARNING: {0}".format(err))
+
+        for key in EventType.types:
+            c.execute("INSERT INTO EVENT_TYPE VALUES(?,?)", (key, EventType.types[key]))
+
+        conn.commit()
+
+    @staticmethod
+    def dropEventTypeTable():
+        c = conn.cursor()
+
+        try:
+            c.execute("DROP TABLE EVENT_TYPE")
+        except sqlite3.OperationalError as err:
+            print("DROP TBALE WARNING: {0}".format(err))
+
+        conn.commit()
+
+    def __repr__(self):
+        return "Event Types: %s" % (self.types)
 
 class Privacy(object):
     def __init__(self):
