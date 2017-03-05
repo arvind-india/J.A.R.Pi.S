@@ -52,6 +52,27 @@ class DialogManager:
         pass
 
 
+class DiscourseTree:
+
+    def __init__(self, root_node):
+        self._tree_root = root_node
+
+    def insert(self, semantic_object):
+        def visit(self, discourse_unit):
+            type_fits = discourse_unit.entity_type == semantic_object.entity_type
+            contains_no_object = discourse_unit.semantic_object is None
+
+            if type_fits and contains_no_object:
+                discourse_unit.semantic_object = semantic_object
+            else:
+                for child in discourse_unit._children.accept_visitor(visit)
+
+        self._tree_root.accept_visitor(visit)
+
+    def is_rooted(self):
+        return self._tree_root.semantic_object is not None
+
+
 class DiscourseUnit:
 
     def __init__(self, evaluation_strategy, entity_type, children):
@@ -82,27 +103,6 @@ class DiscourseUnit:
 
     def accept_visitor(self, visit):
         visit(self)
-
-
-class DiscourseTree:
-
-    def __init__(self, root_node):
-        self._tree_root = root_node
-
-    def insert(self, semantic_object):
-        def visit(self, discourse_unit):
-            type_fits = discourse_unit.entity_type == semantic_object.entity_type
-            contains_no_object = discourse_unit.semantic_object is None
-
-            if type_fits and contains_no_object:
-                discourse_unit.semantic_object = semantic_object
-            else:
-                for child in discourse_unit._children.accept_visitor(visit)
-
-        self._tree_root.accept_visitor(visit)
-
-    def is_rooted(self):
-        return self._tree_root.semantic_object is not None
 
 
 class SemanticEvaluationError(Exception):
