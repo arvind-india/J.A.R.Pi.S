@@ -103,7 +103,8 @@ class DiscourseTree:
             if type_fits and contains_no_object:
                 discourse_unit.semantic_object = semantic_object
             else:
-                for child in discourse_unit._children.accept_visitor(visit)
+                for child in discourse_unit._children:
+                    child.accept_visitor(visit)
 
         self._tree_root.accept_visitor(visit)
 
