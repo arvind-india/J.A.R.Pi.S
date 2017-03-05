@@ -48,13 +48,14 @@ class DialogManager:
         #       failure -> error handling
         #       invalid -> error handling
         # 5 handle empty DU (ask user)
-        discourse_tree = self._select_best_discourse_tree()
+        discourse_tree = self._select_discourse_tree()
         object_to_resolve = None
-        if discourse_tree is not None:
-            object_to_resolve = discourse_tree.get_next_unresolved_semantic_object()
-        else:
-            # request further information
+
+        if discourse_tree is None:
+            # render response and retrieve further information from the user
             return
+
+        object_to_resolve = discourse_tree.get_next_unresolved_semantic_object()
 
         if object_to_resolve is not None:
             communication.publish("evaluationRequest", object_to_resolve)
@@ -64,7 +65,7 @@ class DialogManager:
             # request further information
             return
 
-    def _select_best_discourse_tree(self):
+    def _select_discourse_tree(self):
         # TODO need some place to reset the _current_discourse_tree after
         # semantic binding
         if self._current_discourse_tree is not None:
