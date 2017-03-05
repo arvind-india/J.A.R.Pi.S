@@ -118,7 +118,7 @@ class Birthday(Event):
 
         c.execute("SELECT last_insert_rowid()")
         b = c.fetchone()
-        print (b)
+        EventParameter.insert(b[0],"subject", self._subject)
 
         conn.commit()
         return self
@@ -139,6 +139,34 @@ class Birthday(Event):
             return Event.fromResultToObject(b)
 
         raise EventNotFoundException("No Event found with given ID: %s" % (id))
+
+
+class EventParameter(object):
+
+    @staticmethod
+    def insert(eventId, key, value):
+        c = conn.cursor()
+        c.execute("INSERT INTO EVENT_PARAMETER VALUES(null, ?, ?, ?)",(eventId, key, value,))
+        conn.commit()
+
+    @staticmethod
+    def createEventParameterTable():
+        c = conn.cursor()
+        try:
+            c.execute("CREATE TABLE EVENT_PARAMETER(ID INTEGER PRIMARY KEY autoincrement,FK_EVENT INTEGER, KEY TEXT,VALUE TEXT)")
+        except sqlite3.OperationalError as err:
+            print("CREATE TBALE WARNING: {0}".format(err))
+
+        conn.commit()
+
+    @staticmethod
+    def dropEventParameterTable():
+        c = conn.cursor()
+        try:
+            c.execute("DROP TABLE EVENT_PARAMETER")
+        except sqlite3.OperationalError as err:
+            print("DROP TBALE WARNING: {0}".format(err))
+        conn.commit()
 
 class EventNotFoundException(Exception):
     pass
