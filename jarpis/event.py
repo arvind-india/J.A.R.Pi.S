@@ -65,7 +65,14 @@ class Event(object):
         b = c.fetchone()
 
         if b is not None:
-            return Event.fromResultToObject(b)
+            eventType = b[6];
+
+            if eventType == 1:
+                print("Im here 1")
+                return Event.fromResultToObject(b)
+            elif eventType == 2:
+                print("Im here 2")
+                return Birthday.fromResultToObject(b)
 
         raise EventNotFoundException("No Event found with given ID: %s" % (id))
 
@@ -101,15 +108,21 @@ class Event(object):
         conn.commit()
 
     def __repr__(self, *args, **kwargs):
-        return "ID=%s, Description=%s, START=%s, END=%s, PRIVATE=%s, CREATOR=%s, TYPE=%s, SERIES=%s, SUPER=%s" % (
-            self._id, self._description, self._start, self._end, self._private, self._creator, self._type, self._series,
-            super(*args, **kwargs).__repr__())
+        return "ID=%s, Description=%s, START=%s, END=%s, PRIVATE=%s, CREATOR=%s, TYPE=%s, SERIES=%s" % (
+            self._id, self._description, self._start, self._end, self._private, self._creator, self._type, self._series)
 
 
 class Birthday(Event):
-    def __init__(self, id, description, start, end, private, creator, type, series, subject):
+    def __init__(self, id, description, start, end, private, creator, type, series, params = {}):
         Event.__init__(self, id, description, start, end, private, creator, type, series)
-        self._subject = subject
+        self._params = params
+
+    @staticmethod
+    def fromResultToObject(obj):
+        id = obj[0]
+        params = EventParameter.loadParameterById(id)
+        ev = Birthday(obj[0], obj[1], obj[2], obj[3], obj[4], obj[5], obj[6], obj[7], params)
+        return ev
 
     def create(self):
         c = conn.cursor()
@@ -120,7 +133,9 @@ class Birthday(Event):
 
         c.execute("SELECT last_insert_rowid()")
         b = c.fetchone()
-        EventParameter.insert(b[0],"subject", self._subject)
+
+        for paramKey in self._params:
+            EventParameter.insert(b[0], paramKey, self._params[paramKey])
 
         conn.commit()
         return self
@@ -128,22 +143,29 @@ class Birthday(Event):
     def delete(self):
         c = conn.cursor()
         c.execute("DELETE FROM EVENT WHERE ID = ?", (self._id,))
+        #TODO: Find out if sqlite supports delete cascade
+        c.execute("DELETE FROM EVENT_PARAMETER WHERE FK_EVENT = ?", (self.__id,))
         conn.commit()
         return True
 
-    @staticmethod
-    def findOneById(id):
-        c = conn.cursor()
-        c.execute("SELECT * FROM EVENT WHERE ID = ?", (id,))
-        b = c.fetchone()
-
-        if b is not None:
-            return Event.fromResultToObject(b)
-
-        raise EventNotFoundException("No Event found with given ID: %s" % (id))
+    def __repr__(self, *args, **kwargs):
+        return "ID=%s, Description=%s, START=%s, END=%s, PRIVATE=%s, CREATOR=%s, TYPE=%s, SERIES=%s, PARAMS=%s" % (
+            self._id, self._description, self._start, self._end, self._private, self._creator, self._type, self._series, self._params)
 
 
 class EventParameter(object):
+    @staticmethod
+    def loadParameterById(id):
+        c = conn.cursor()
+        c.execute("SELECT * FROM EVENT_PARAMETER WHERE FK_EVENT = ?", (id,))
+
+        params = {}
+        for obj in c.fetchall():
+            key = obj[2]
+            val = obj[3]
+            params[key] = val
+
+        return params
 
     @staticmethod
     def insert(eventId, key, value):

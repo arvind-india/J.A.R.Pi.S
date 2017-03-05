@@ -51,11 +51,12 @@ class EventTest(unittest.TestCase):
     def test_create_birthday_event(self):
         subject = "Kevin"
         level = "private"
-        self.object = Birthday(-1000, "Party", time.time(), time.time(), level, 1, 1, None, subject)
+        self.object = Birthday(-1000, "Geburtstagsparty", time.time(), time.time(), level, 1, EventType.getTypeIdByName("birthday"), None, {"subject":subject})
         TestDBUtil.execute(self.object.create, [])
         event = TestDBUtil.execute(self.object.findOneById, [-1000])
-        self.assertTrue(event._private, Privacy.getLevelsIdByName(level))
+        self.assertEqual(event._params["subject"], "Kevin")
 
     def tearDown(self):
+        # pass
         TestDBUtil.execute(Event.dropEventTable, [])
         TestDBUtil.execute(EventParameter.dropEventParameterTable, [])
