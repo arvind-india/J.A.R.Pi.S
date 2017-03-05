@@ -37,6 +37,17 @@ class DialogManager:
         self._rooted_trees = rooted_trees
 
     def _start_semantic_evaluation(self):
+        # evaluation algorithm:
+
+        # 1 select the best rooted tree
+        # 2 get unresolved semantic object from non-empty DU
+        # 3 request evaluation for the semantic object
+        # 4 respond to event:
+        #       success -> go to 2.
+        #       failure -> error handling
+        #       invalid -> error handling
+        # 5 handle empty DU (ask user)
+
         pass
 
     def _nothin_to_interpret(self):
