@@ -83,7 +83,7 @@ class Event(object):
     def createEventTable():
         c = conn.cursor()
         try:
-            c.execute("CREATE TABLE EVENT(ID INTEGER,DESCRIPTION INTEGER,START_DATE TEXT,END_DATE TEXT,PRIVATE INTEGER,FK_CREATOR INTEGER,FK_TYPE INTEGER,FK_SERIES INTEGER)")
+            c.execute("CREATE TABLE EVENT(ID INTEGER PRIMARY KEY autoincrement,DESCRIPTION INTEGER,START_DATE TEXT,END_DATE TEXT,PRIVATE INTEGER,FK_CREATOR INTEGER,FK_TYPE INTEGER,FK_SERIES INTEGER)")
         except sqlite3.OperationalError as err:
             print("CREATE TBALE WARNING: {0}".format(err))
 
@@ -108,6 +108,37 @@ class Birthday(Event):
     def __init__(self, id, description, start, end, private, creator, type, series, subject):
         Event.__init__(self, id, description, start, end, private, creator, type, series)
         self._subject = subject
+
+    def create(self):
+        c = conn.cursor()
+        c.execute(
+            "INSERT INTO EVENT (ID, DESCRIPTION, START_DATE, END_DATE, PRIVATE, FK_CREATOR, FK_TYPE, FK_SERIES) VALUES(?,?,?,?,?,?,?,?)",
+            (self._id, self._description, self._start, self._end, self._private, self._creator, self._type,
+             self._series))
+
+        c.execute("SELECT last_insert_rowid()")
+        b = c.fetchone()
+        print (b)
+
+        conn.commit()
+        return self
+
+    def delete(self):
+        c = conn.cursor()
+        c.execute("DELETE FROM EVENT WHERE ID = ?", (self._id,))
+        conn.commit()
+        return True
+
+    @staticmethod
+    def findOneById(id):
+        c = conn.cursor()
+        c.execute("SELECT * FROM EVENT WHERE ID = ?", (id,))
+        b = c.fetchone()
+
+        if b is not None:
+            return Event.fromResultToObject(b)
+
+        raise EventNotFoundException("No Event found with given ID: %s" % (id))
 
 class EventNotFoundException(Exception):
     pass
@@ -138,7 +169,7 @@ class EventType(object):
         c = conn.cursor()
 
         try:
-            c.execute("CREATE TABLE EVENT_TYPE(ID INT PRIMARY KEY, DEFINITION TEXT);")
+            c.execute("CREATE TABLE EVENT_TYPE(ID INTEGER PRIMARY KEY autoincrement, DEFINITION TEXT);")
         except sqlite3.OperationalError as err:
             print("CREATE TBALE WARNING: {0}".format(err))
 
@@ -187,7 +218,7 @@ class Privacy(object):
         c = conn.cursor()
 
         try:
-            c.execute("CREATE TABLE PRIVACY(ID INT PRIMARY KEY, LEVEL TEXT);")
+            c.execute("CREATE TABLE PRIVACY(ID INTEGER PRIMARY KEY autoincrement, LEVEL TEXT);")
         except sqlite3.OperationalError as err:
             print("CREATE TBALE WARNING: {0}".format(err))
 

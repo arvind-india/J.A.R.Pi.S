@@ -24,7 +24,7 @@ class EventTest(unittest.TestCase):
     def test_event_not_found_by_id(self):
         TestDBUtil.execute(self.object.create, [])
         with self.assertRaises(EventNotFoundException):
-            TestDBUtil.execute(Event.findOneById, [-1001])
+            TestDBUtil.execute(Event.findOneById, [-999])
 
     def test_create_private_event(self):
         level = "private"
@@ -47,5 +47,13 @@ class EventTest(unittest.TestCase):
         event = TestDBUtil.execute(self.object.findOneById, [-1000])
         self.assertTrue(event._private, Privacy.getLevelsIdByName("public"))
 
+    def test_create_birthday_event(self):
+        subject = "Kevin"
+        level = "private"
+        self.object = Birthday(-1000, "Party", time.time(), time.time(), level, 1, 1, None, subject)
+        TestDBUtil.execute(self.object.create, [])
+        event = TestDBUtil.execute(self.object.findOneById, [-1000])
+        self.assertTrue(event._private, Privacy.getLevelsIdByName(level))
+
     def tearDown(self):
-        TestDBUtil.execute(Event.dropEventTable,[])
+        TestDBUtil.execute(Event.dropEventTable, [])
