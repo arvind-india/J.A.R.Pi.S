@@ -69,7 +69,7 @@ class DiscourseTree:
         self._tree_root = root_node
 
     def insert(self, semantic_object):
-        def visit(self, discourse_unit):
+        def visit(discourse_unit):
             type_fits = discourse_unit.entity_type == semantic_object.entity_type
             contains_no_object = discourse_unit.semantic_object is None
 
