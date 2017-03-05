@@ -56,7 +56,21 @@ class EventTest(unittest.TestCase):
         event = TestDBUtil.execute(self.object.findOneById, [-1000])
         self.assertEqual(event._params["subject"], "Kevin")
 
+    def test_convert_from_create_default_and_birthday_event(self):
+        level = "private"
+        defaultEvent = Event(-1000, "Normales Event", time.time(), time.time(), level, 1,
+                             EventType.getTypeIdByName("default"), None)
+
+        subject = "Kevin"
+        birthdayEvent = Birthday(-1001, "Geburtstagsparty", time.time(), time.time(), level, 1,
+                               EventType.getTypeIdByName("birthday"), None, {"subject": subject})
+
+        TestDBUtil.execute(defaultEvent.create, [])
+        TestDBUtil.execute(birthdayEvent.create, [])
+        events = TestDBUtil.execute(Event.findAll, [])
+        self.assertIsInstance(events[1], Event)
+        self.assertIsInstance(events[0], Birthday)
+
     def tearDown(self):
-        # pass
         TestDBUtil.execute(Event.dropEventTable, [])
         TestDBUtil.execute(EventParameter.dropEventParameterTable, [])

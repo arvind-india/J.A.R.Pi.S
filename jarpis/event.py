@@ -65,14 +65,7 @@ class Event(object):
         b = c.fetchone()
 
         if b is not None:
-            eventType = b[6];
-
-            if eventType == 1:
-                print("Im here 1")
-                return Event.fromResultToObject(b)
-            elif eventType == 2:
-                print("Im here 2")
-                return Birthday.fromResultToObject(b)
+            return EventType.convert(b)
 
         raise EventNotFoundException("No Event found with given ID: %s" % (id))
 
@@ -85,6 +78,17 @@ class Event(object):
         resultList = []
         for obj in c.fetchall():
             resultList.append(Event.fromResultToObject(obj))
+
+        return resultList
+
+    @staticmethod
+    def findAll():
+        c = conn.cursor()
+        c.execute("SELECT * FROM EVENT")
+
+        resultList = []
+        for obj in c.fetchall():
+            resultList.append(EventType.convert(obj))
 
         return resultList
 
@@ -198,6 +202,15 @@ class EventNotFoundException(Exception):
 class EventType(object):
     def __init__(self):
         pass
+
+    @staticmethod
+    def convert(resultSet):
+        eventType = resultSet[6];
+
+        if eventType == 1:
+            return Event.fromResultToObject(resultSet)
+        elif eventType == 2:
+            return Birthday.fromResultToObject(resultSet)
 
     types = {1:'default', 2: 'birthday'}
 
