@@ -50,7 +50,7 @@ class DialogManager:
 
         pass
 
-    def _nothin_to_interpret(self):
+    def _nothing_to_interpret(self):
         pass
 
     def _semantic_object_evaluated(self, semantic_object):
