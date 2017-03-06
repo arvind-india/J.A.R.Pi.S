@@ -73,12 +73,12 @@ class DialogManager:
         if self._current_discourse_tree is not None:
             return self._current_discourse_tree
         else:
-            if len(self._current_discourse_tree) == 0:
-                # TODO is a Nullobject-pattern-like tree an option?
-                return None
-            else:
-                self._set_current_discourse_tree(self._discourse_trees[0])
+            if len(self._rooted_trees) > 0:
+                self._set_current_discourse_tree(self._rooted_trees[0])
                 return self._current_discourse_tree
+
+            # TODO is a Nullobject-pattern-like tree an option?
+            return None
 
     def _set_current_discourse_tree(self, tree):
         self._current_discourse_tree = tree
