@@ -61,8 +61,8 @@ class DialogManager:
             communication.publish("evaluationRequest", object_to_resolve)
             return
         else:
-            empty_discourse_unit = discourse_tree.get_next_unresolved_discourse_unit()
-            # request further information
+            empty_discourse_unit = discourse_tree.get_next_empty_discourse_unit()
+            communication.publish()
             return
 
     def _select_discourse_tree(self):
@@ -115,7 +115,7 @@ class DiscourseTree:
     def get_next_unresolved_semantic_object(self):
         pass
 
-    def get_next_unresolved_discourse_unit(self):
+    def get_next_empty_discourse_unit(self):
         pass
 
 
