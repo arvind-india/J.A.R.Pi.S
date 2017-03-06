@@ -137,7 +137,7 @@ class DiscourseUnit:
         self._semantic_object = None
 
     @property
-    def _is_resolved(self):
+    def is_resolved(self):
         return self._is_resolved
 
     @property
@@ -157,6 +157,23 @@ class DiscourseUnit:
 
     def resolve(self):
         self._is_resolved = True
+
+    def has_unresolved_children(self):
+        unresolved = self._get_unresolved_children()
+
+        return len(unresolved) > 0
+
+    def _get_unresolved_children(self):
+        return [child for child in self._children if (
+            not child.is_resolved)]
+
+    def get_next_unresolved_child(self):
+        unresolved = self._get_unresolved_children()
+
+        if len(unresolved) > 0:
+            return unresolved[0]
+
+        return None
 
 
 class SemanticEvaluationError(Exception):
