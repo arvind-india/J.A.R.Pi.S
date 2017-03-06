@@ -49,21 +49,23 @@ class DialogManager:
         #       invalid -> error handling
         # 5 handle empty DU (ask user)
         discourse_tree = self._select_discourse_tree()
-        object_to_resolve = None
-
         if discourse_tree is None:
             # render response and retrieve further information from the user
+            communication.publish("noFittingDiscourseTreeFound")
             return
 
         object_to_resolve = discourse_tree.get_next_unresolved_semantic_object()
-
         if object_to_resolve is not None:
             communication.publish("evaluationRequest", object_to_resolve)
-            return
         else:
             empty_discourse_unit = discourse_tree.get_next_empty_discourse_unit()
-            communication.publish()
-            return
+
+            # The rendered response must contain information about the needed entity type
+            # e. g. "Which event (entity_type) would you like to move?".
+            # Is this enough? Where does the whole response text come from? Stored in the most
+            # detailed entity semantic class?
+            communication.publish(
+                "furtherInformationRequest", empty_discourse_unit.entity_type)  # alternative event name: insufficientKnowledge
 
     def _select_discourse_tree(self):
         # TODO need some place to reset the _current_discourse_tree after
