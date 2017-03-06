@@ -87,7 +87,7 @@ class DialogManager:
         del self._current_discourse_tree
 
     def _nothing_to_interpret(self):
-        pass
+        jarpis.dialogs.communication.publish("renderLatestResponse")
 
     def _semantic_object_evaluated(self, semantic_object):
         pass
