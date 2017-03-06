@@ -79,7 +79,7 @@ class EventTest(unittest.TestCase):
                                  EventType.getTypeIdByName("birthday"), None, {"subject": subject})
 
         TestDBUtil.execute(birthdayEvent.create, [])
-        self.assertIsNotNone(birthdayEvent)
+        self.assertIsNotNone(TestDBUtil.execute(Birthday.findOneById, [-1001]))
         TestDBUtil.execute(birthdayEvent.delete, [])
         with self.assertRaises(EventNotFoundException):
             TestDBUtil.execute(Event.findOneById, [-1001])
@@ -91,7 +91,7 @@ class EventTest(unittest.TestCase):
                                  EventType.getTypeIdByName("birthday"), None, {"subject": subject})
 
         TestDBUtil.execute(birthdayEvent.create, [])
-        self.assertIsNotNone(birthdayEvent)
+        self.assertIsNotNone(TestDBUtil.execute(Birthday.findOneById, [-1001]))
         params = TestDBUtil.execute(EventParameter.loadParameterById, [birthdayEvent._id])
         self.assertIsNotNone(params)
         TestDBUtil.execute(birthdayEvent.delete, [])
@@ -102,6 +102,5 @@ class EventTest(unittest.TestCase):
         self.assertEqual(paramsFromDeletedEvent, {})
 
     def tearDown(self):
-        # pass
         TestDBUtil.execute(Event.dropEventTable, [])
         TestDBUtil.execute(EventParameter.dropEventParameterTable, [])
