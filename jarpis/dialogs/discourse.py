@@ -17,7 +17,7 @@ class DialogManager:
         jarpis.dialogs.communication.register(
             "nothingToInterpret", self._nothing_to_interpret)
         jarpis.dialogs.communication.register(
-            "interpretationFinished", self._evaluate_discourse_trees)
+            "interpretationFinished", self.start_semantic_evaluation)
 
         # discourse analysis events
         jarpis.dialogs.communication.register(
@@ -36,7 +36,7 @@ class DialogManager:
 
         self._rooted_trees = rooted_trees
 
-    def _evaluate_discourse_trees(self):
+    def start_semantic_evaluation(self):
         communication = jarpis.dialogs.communication
         # evaluation algorithm:
 
