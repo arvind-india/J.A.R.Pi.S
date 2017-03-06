@@ -69,8 +69,6 @@ class EventTest(unittest.TestCase):
         TestDBUtil.execute(birthdayEvent.create, [])
         events = TestDBUtil.execute(Event.findAll, [])
 
-        print("e1: %s, e2: %s" % (events[0],events[1]))
-
         self.assertIsInstance(events[1], Event)
         self.assertIsInstance(events[0], Birthday)
 
