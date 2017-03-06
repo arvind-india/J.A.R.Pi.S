@@ -145,7 +145,7 @@ class Birthday(Event):
         super(Birthday, self).delete()
         c = conn.cursor()
         #TODO: Find out if sqlite supports delete cascade
-        c.execute("DELETE FROM EVENT_PARAMETER WHERE FK_EVENT = ?", (self.__id,))
+        c.execute("DELETE FROM EVENT_PARAMETER WHERE FK_EVENT = ?", (self._id,))
         conn.commit()
         return True
 
