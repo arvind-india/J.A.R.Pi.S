@@ -38,16 +38,7 @@ class DialogManager:
 
     def start_semantic_evaluation(self):
         communication = jarpis.dialogs.communication
-        # evaluation algorithm:
 
-        # 1 select the best rooted tree
-        # 2 get unresolved semantic object from non-empty DU
-        # 3 request evaluation for the semantic object
-        # 4 respond to event (implemented in other handlers):
-        #       success -> go to 2. (or completely repeat?! -> easier to implement)
-        #       failure -> error handling
-        #       invalid -> error handling
-        # 5 handle empty DU (ask user)
         discourse_tree = self._select_discourse_tree()
         if discourse_tree is None:
             # render response and retrieve further information from the user
@@ -65,7 +56,7 @@ class DialogManager:
             # Is this enough? Where does the whole response text come from? Stored in the most
             # detailed entity semantic class?
             communication.publish(
-                "furtherInformationRequest", empty_discourse_unit.entity_type)  # alternative event name: insufficientKnowledge
+                "furtherInformationRequest", empty_discourse_unit.entity_type)
 
     def _select_discourse_tree(self):
         # TODO need some place to reset the _current_discourse_tree after
