@@ -137,7 +137,6 @@ class DiscourseTree:
     def get_next_empty_discourse_unit(self):
         class ScopedStorage:
             next_unit = None
-            pass
 
         def visit(discourse_unit):
             if discourse_unit.has_empty_children():
