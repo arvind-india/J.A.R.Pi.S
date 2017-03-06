@@ -65,14 +65,7 @@ class Event(object):
         b = c.fetchone()
 
         if b is not None:
-            eventType = b[6];
-
-            if eventType == 1:
-                print("Im here 1")
-                return Event.fromResultToObject(b)
-            elif eventType == 2:
-                print("Im here 2")
-                return Birthday.fromResultToObject(b)
+            return EventType.convert(b)
 
         raise EventNotFoundException("No Event found with given ID: %s" % (id))
 
@@ -85,6 +78,17 @@ class Event(object):
         resultList = []
         for obj in c.fetchall():
             resultList.append(Event.fromResultToObject(obj))
+
+        return resultList
+
+    @staticmethod
+    def findAll():
+        c = conn.cursor()
+        c.execute("SELECT * FROM EVENT")
+
+        resultList = []
+        for obj in c.fetchall():
+            resultList.append(EventType.convert(obj))
 
         return resultList
 
@@ -125,12 +129,9 @@ class Birthday(Event):
         return ev
 
     def create(self):
-        c = conn.cursor()
-        c.execute(
-            "INSERT INTO EVENT (ID, DESCRIPTION, START_DATE, END_DATE, PRIVATE, FK_CREATOR, FK_TYPE, FK_SERIES) VALUES(?,?,?,?,?,?,?,?)",
-            (self._id, self._description, self._start, self._end, self._private, self._creator, self._type,
-             self._series))
+        super(Birthday, self).create()
 
+        c = conn.cursor()
         c.execute("SELECT last_insert_rowid()")
         b = c.fetchone()
 
@@ -141,8 +142,8 @@ class Birthday(Event):
         return self
 
     def delete(self):
+        super(Birthday, self).delete()
         c = conn.cursor()
-        c.execute("DELETE FROM EVENT WHERE ID = ?", (self._id,))
         #TODO: Find out if sqlite supports delete cascade
         c.execute("DELETE FROM EVENT_PARAMETER WHERE FK_EVENT = ?", (self.__id,))
         conn.commit()
@@ -198,6 +199,15 @@ class EventNotFoundException(Exception):
 class EventType(object):
     def __init__(self):
         pass
+
+    @staticmethod
+    def convert(resultSet):
+        eventType = resultSet[6];
+
+        if eventType == 1:
+            return Event.fromResultToObject(resultSet)
+        elif eventType == 2:
+            return Birthday.fromResultToObject(resultSet)
 
     types = {1:'default', 2: 'birthday'}
 
