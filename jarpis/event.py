@@ -85,7 +85,7 @@ class Event(object):
     @staticmethod
     def findAll():
         c = conn.cursor()
-        c.execute("SELECT * FROM EVENT ORDER BY ID")
+        c.execute("SELECT * FROM EVENT")
 
         eventList = []
         for result in c.fetchall():

@@ -58,19 +58,20 @@ class EventTest(unittest.TestCase):
 
     def test_convert_from_create_default_and_birthday_event(self):
         level = "private"
-        defaultEvent = Event(-1000, "Normales Event", time.time(), time.time(), level, 1,
+        defaultEvent = Event(-1001, "Normales Event", time.time(), time.time(), level, 1,
                              EventType.getTypeIdByName("default"), None)
 
         subject = "Kevin"
-        birthdayEvent = Birthday(-1001, "Geburtstagsparty", time.time(), time.time(), level, 1,
+        birthdayEvent = Birthday(-1000, "Geburtstagsparty", time.time(), time.time(), level, 1,
                                EventType.getTypeIdByName("birthday"), None, {"subject": subject})
 
         TestDBUtil.execute(defaultEvent.create, [])
         TestDBUtil.execute(birthdayEvent.create, [])
-        events = TestDBUtil.execute(Event.findAll, [])
+        birthday = TestDBUtil.execute(Event.findOneById, [-1000])
+        event = TestDBUtil.execute(Event.findOneById, [-1001])
 
-        self.assertIsInstance(events[1], Event)
-        self.assertIsInstance(events[0], Birthday)
+        self.assertIsInstance(event, Event)
+        self.assertIsInstance(birthday, Birthday)
 
     def test_delete_birthday_event(self):
         level = "private"
@@ -79,7 +80,7 @@ class EventTest(unittest.TestCase):
                                  EventType.getTypeIdByName("birthday"), None, {"subject": subject})
 
         TestDBUtil.execute(birthdayEvent.create, [])
-        self.assertIsNotNone(birthdayEvent)
+        self.assertIsNotNone(TestDBUtil.execute(Birthday.findOneById, [-1001]))
         TestDBUtil.execute(birthdayEvent.delete, [])
         with self.assertRaises(EventNotFoundException):
             TestDBUtil.execute(Event.findOneById, [-1001])
@@ -91,7 +92,7 @@ class EventTest(unittest.TestCase):
                                  EventType.getTypeIdByName("birthday"), None, {"subject": subject})
 
         TestDBUtil.execute(birthdayEvent.create, [])
-        self.assertIsNotNone(birthdayEvent)
+        self.assertIsNotNone(TestDBUtil.execute(Birthday.findOneById, [-1001]))
         params = TestDBUtil.execute(EventParameter.loadParameterById, [birthdayEvent._id])
         self.assertIsNotNone(params)
         TestDBUtil.execute(birthdayEvent.delete, [])
@@ -102,6 +103,5 @@ class EventTest(unittest.TestCase):
         self.assertEqual(paramsFromDeletedEvent, {})
 
     def tearDown(self):
-        # pass
         TestDBUtil.execute(Event.dropEventTable, [])
         TestDBUtil.execute(EventParameter.dropEventParameterTable, [])
