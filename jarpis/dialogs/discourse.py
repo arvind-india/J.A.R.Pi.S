@@ -164,19 +164,31 @@ class DiscourseUnit:
         self._is_resolved = True
 
     def has_unresolved_children(self):
-        unresolved = self._get_unresolved_children()
-
+        unresolved = self._get_children_by_condition(
+            lambda child: (not child.is_resolved))
         return len(unresolved) > 0
 
-    def _get_unresolved_children(self):
-        return [child for child in self._children if (
-            not child.is_resolved)]
+    def has_empty_children(self):
+        empty = self._get_children_by_condition(
+            lambda child: (child.semantic_object is None))
+        return len(empty) > 0
+
+    def _get_children_by_condition(self, matches):
+        return [child for child in self._children if matches(child)]
 
     def next_unresolved_child(self):
         unresolved = self._get_unresolved_children()
 
         if len(unresolved) > 0:
             return unresolved[0]
+
+        return None
+
+    def next_empty_child(self):
+        empty = self._get_empty_children()
+
+        if len(empty) > 0:
+            return empty[0]
 
         return None
 
