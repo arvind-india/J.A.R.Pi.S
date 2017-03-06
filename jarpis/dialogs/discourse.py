@@ -121,7 +121,12 @@ class DiscourseTree:
         return self._tree_root.semantic_object is not None
 
     def get_next_unresolved_semantic_object(self):
-        pass
+        def visit(discourse_unit):
+            if discourse_unit.has_unresolved_children():
+                child = discourse_unit.next_unresolved_child()
+                child.accept_visitor(visit)
+            else:
+                return discourse_unit.semantic_object
 
     def get_next_empty_discourse_unit(self):
         pass
@@ -167,7 +172,7 @@ class DiscourseUnit:
         return [child for child in self._children if (
             not child.is_resolved)]
 
-    def get_next_unresolved_child(self):
+    def next_unresolved_child(self):
         unresolved = self._get_unresolved_children()
 
         if len(unresolved) > 0:
