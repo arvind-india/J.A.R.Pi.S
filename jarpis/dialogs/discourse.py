@@ -138,7 +138,7 @@ class DiscourseUnit:
 
     @property
     def is_resolved(self):
-        return self._is_resolved
+        return self._is_resolved and self.semantic_object is not None
 
     @property
     def semantic_object(self):
