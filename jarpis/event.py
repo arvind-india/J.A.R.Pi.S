@@ -29,15 +29,15 @@ class Event(object):
         self._creator = creator
 
         if type is None:
-            self.type = EventType.getTypeIdByName("default")
+            self._type = EventType.getTypeIdByName("default")
         else:
             self._type = type
 
         self._series = series
 
     @staticmethod
-    def fromResultToObject(obj):
-        return Event(obj[0], obj[1], obj[2], obj[3], obj[4], obj[5], obj[6], obj[7])
+    def fromResultToObject(result):
+        return Event(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7])
 
     def create(self):
         c = conn.cursor()
@@ -62,10 +62,10 @@ class Event(object):
     def findOneById(id):
         c = conn.cursor()
         c.execute("SELECT * FROM EVENT WHERE ID = ?", (id,))
-        b = c.fetchone()
+        result = c.fetchone()
 
-        if b is not None:
-            return EventType.convert(b)
+        if result is not None:
+            return EventType.convert(result)
 
         raise EventNotFoundException("No Event found with given ID: %s" % (id))
 
@@ -75,22 +75,23 @@ class Event(object):
         c = conn.cursor()
         c.execute("SELECT * FROM EVENT WHERE start_date > ? AND end_date < ?", (from_date, to_date,))
 
-        resultList = []
-        for obj in c.fetchall():
-            resultList.append(Event.fromResultToObject(obj))
+        eventList = []
+        for result in c.fetchall():
+            eventList.append(EventType.convert(result))
 
-        return resultList
+        return eventList
 
+    # TODO Move this to Calendar Class
     @staticmethod
     def findAll():
         c = conn.cursor()
-        c.execute("SELECT * FROM EVENT")
+        c.execute("SELECT * FROM EVENT ORDER BY ID")
 
-        resultList = []
-        for obj in c.fetchall():
-            resultList.append(EventType.convert(obj))
+        eventList = []
+        for result in c.fetchall():
+            eventList.append(EventType.convert(result))
 
-        return resultList
+        return eventList
 
     @staticmethod
     def createEventTable():
@@ -122,10 +123,10 @@ class Birthday(Event):
         self._params = params
 
     @staticmethod
-    def fromResultToObject(obj):
-        id = obj[0]
-        params = EventParameter.loadParameterById(id)
-        ev = Birthday(obj[0], obj[1], obj[2], obj[3], obj[4], obj[5], obj[6], obj[7], params)
+    def fromResultToObject(result):
+        identity = result[0]
+        params = EventParameter.loadParameterById(identity)
+        ev = Birthday(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], params)
         return ev
 
     def create(self):
@@ -133,10 +134,10 @@ class Birthday(Event):
 
         c = conn.cursor()
         c.execute("SELECT last_insert_rowid()")
-        b = c.fetchone()
+        result = c.fetchone()
 
         for paramKey in self._params:
-            EventParameter.insert(b[0], paramKey, self._params[paramKey])
+            EventParameter.insert(result[0], paramKey, self._params[paramKey])
 
         conn.commit()
         return self
@@ -201,13 +202,13 @@ class EventType(object):
         pass
 
     @staticmethod
-    def convert(resultSet):
-        eventType = resultSet[6];
+    def convert(result):
+        eventType = result[6];
 
         if eventType == 1:
-            return Event.fromResultToObject(resultSet)
+            return Event.fromResultToObject(result)
         elif eventType == 2:
-            return Birthday.fromResultToObject(resultSet)
+            return Birthday.fromResultToObject(result)
 
     types = {1:'default', 2: 'birthday'}
 
