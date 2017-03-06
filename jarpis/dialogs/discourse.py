@@ -136,9 +136,6 @@ class DiscourseUnit:
         self._children = children
         self._semantic_object = None
 
-    def resolve(self):
-        self._is_resolved = True
-
     @property
     def _is_resolved(self):
         return self._is_resolved
@@ -157,6 +154,9 @@ class DiscourseUnit:
 
     def accept_visitor(self, visit):
         visit(self)
+
+    def resolve(self):
+        self._is_resolved = True
 
 
 class SemanticEvaluationError(Exception):
