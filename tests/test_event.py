@@ -102,5 +102,6 @@ class EventTest(unittest.TestCase):
         self.assertEqual(paramsFromDeletedEvent, {})
 
     def tearDown(self):
+        # pass
         TestDBUtil.execute(Event.dropEventTable, [])
         TestDBUtil.execute(EventParameter.dropEventParameterTable, [])
