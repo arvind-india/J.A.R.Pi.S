@@ -81,6 +81,7 @@ class DialogManager:
         jarpis.dialogs.communication.publish("renderLatestResponse")
 
     def _semantic_object_evaluated(self, semantic_object):
+        # TODO need to know which semantic_object was evaluated
         pass
 
     def _semantic_object_evaluation_failed(self, semantic_object):
@@ -96,48 +97,50 @@ class DiscourseTree:
         self._tree_root = root_node
 
     def insert(self, semantic_object):
-        def visit(discourse_unit):
-            type_fits = discourse_unit.entity_type == semantic_object.entity_type
-            contains_no_object = discourse_unit.semantic_object is None
+        class InsertionVisitor:
 
-            if type_fits and contains_no_object:
-                discourse_unit.semantic_object = semantic_object
-            else:
-                for child in discourse_unit._children:
-                    child.accept_visitor(visit)
+            def visit(self, discourse_unit):
+                type_fits = discourse_unit.entity_type == semantic_object.entity_type
+                contains_no_object = discourse_unit.semantic_object is None
 
-        self._tree_root.accept_visitor(visit)
+                if type_fits and contains_no_object:
+                    discourse_unit.semantic_object = semantic_object
+                else:
+                    for child in discourse_unit._children:
+                        child.accept_visitor(self)
+
+        self._tree_root.accept_visitor(InsertionVisitor())
 
     def is_rooted(self):
         return self._tree_root.semantic_object is not None
 
     def get_next_unresolved_semantic_object(self):
-        class ScopedStorage:
-            semantic_object = None
+        class UnresolvedObjectVisitor:
 
-        def visit(discourse_unit):
-            if discourse_unit.has_unresolved_children():
-                child = discourse_unit.next_unresolved_child()
-                child.accept_visitor(visit)
-            else:
-                ScopedStorage.semantic_object = discourse_unit.semantic_object
+            def visit(self, discourse_unit):
+                if discourse_unit.has_unresolved_children():
+                    child = discourse_unit.next_unresolved_child()
+                    child.accept_visitor(self)
+                else:
+                    self.semantic_object = discourse_unit.semantic_object
 
-        self._tree_root.accept_visitor(visit)
-        return ScopedStorage.semantic_object
+        visitor = UnresolvedObjectVisitor()
+        self._tree_root.accept_visitor(visitor)
+        return visitor.semantic_object
 
     def get_next_empty_discourse_unit(self):
-        class ScopedStorage:
-            next_unit = None
+        class EmpyDiscourseUnitVisitor:
 
-        def visit(discourse_unit):
-            if discourse_unit.has_empty_children():
-                child = discourse_unit.next_empty_child()
-                child.accept_visitor(visit)
-            else:
-                ScopedStorage.next_unit = discourse_unit
+            def visit(self, discourse_unit):
+                if discourse_unit.has_empty_children():
+                    child = discourse_unit.next_empty_child()
+                    child.accept_visitor(self)
+                else:
+                    self.discourse_unit = discourse_unit
 
-        self._tree_root.accept_visitor(visit)
-        return ScopedStorage.next_unit
+        visitor = EmpyDiscourseUnitVisitor()
+        self._tree_root.accept_visitor(visitor)
+        return visitor.discourse_unit
 
 
 class DiscourseUnit:
@@ -165,8 +168,8 @@ class DiscourseUnit:
     def entity_type(self):
         return self._type
 
-    def accept_visitor(self, visit):
-        visit(self)
+    def accept_visitor(self, visitor):
+        visitor.visit(self)
 
     def resolve(self):
         self._is_resolved = True
