@@ -106,7 +106,7 @@ class DiscourseTree:
                 if type_fits and contains_no_object:
                     discourse_unit.semantic_object = semantic_object
                 else:
-                    for child in discourse_unit._children:
+                    for child in discourse_unit.children:
                         child.accept_visitor(self)
 
         self._tree_root.accept_visitor(InsertionVisitor())
@@ -115,18 +115,29 @@ class DiscourseTree:
         return self._tree_root.semantic_object is not None
 
     def get_next_unresolved_semantic_object(self):
+        root = self._tree_root
+
         class UnresolvedObjectVisitor:
 
             def visit(self, discourse_unit):
-                if discourse_unit.has_unresolved_children():
-                    child = discourse_unit.next_unresolved_child()
-                    child.accept_visitor(self)
-                else:
-                    self.semantic_object = discourse_unit.semantic_object
+                for child in discourse_unit.children:
+                    if self.object_to_resolve is not None:
+                        return
+
+                    if not child.is_empty and not child.is_resolved:
+                        child.accept_visitor(self)
+
+                if discourse_unit == root:
+                    for child in discourse_unit.children:
+                        if child.semantic_object is None:
+                            self.object_to_resolve = None
+                            return
+
+                self.object_to_resolve = discourse_unit.semantic_object
 
         visitor = UnresolvedObjectVisitor()
         self._tree_root.accept_visitor(visitor)
-        return visitor.semantic_object
+        return visitor.object_to_resolve
 
     def get_next_empty_discourse_unit(self):
         class EmpyDiscourseUnitVisitor:
@@ -149,12 +160,16 @@ class DiscourseUnit:
         self._evaluation_strategy = evaluation_strategy
         self._is_resolved = False
         self._type = entity_type
-        self._children = children
+        self.children = children
         self._semantic_object = None
 
     @property
     def is_resolved(self):
-        return self._is_resolved and self.semantic_object is not None
+        return self._is_resolved and not self.is_empty
+
+    @property
+    def is_empty(self):
+        return self.semantic_object is None
 
     @property
     def semantic_object(self):
@@ -173,35 +188,6 @@ class DiscourseUnit:
 
     def resolve(self):
         self._is_resolved = True
-
-    def has_unresolved_children(self):
-        unresolved = self._get_children_by_condition(
-            lambda child: (not child.is_resolved))
-        return len(unresolved) > 0
-
-    def has_empty_children(self):
-        empty = self._get_children_by_condition(
-            lambda child: (child.semantic_object is None))
-        return len(empty) > 0
-
-    def _get_children_by_condition(self, matches):
-        return [child for child in self._children if matches(child)]
-
-    def next_unresolved_child(self):
-        unresolved = self._get_unresolved_children()
-
-        if len(unresolved) > 0:
-            return unresolved[0]
-
-        return None
-
-    def next_empty_child(self):
-        empty = self._get_empty_children()
-
-        if len(empty) > 0:
-            return empty[0]
-
-        return None
 
 
 class SemanticEvaluationError(Exception):
