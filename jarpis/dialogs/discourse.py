@@ -98,18 +98,24 @@ class DiscourseTree:
 
     def insert(self, semantic_object):
         class InsertionVisitor:
+            def __init__(self):
+                self.insertion_successfull = False
 
             def visit(self, discourse_unit):
                 type_fits = discourse_unit.entity_type == semantic_object.entity_type
-                contains_no_object = discourse_unit.semantic_object is None
 
-                if type_fits and contains_no_object:
-                    discourse_unit.semantic_object = semantic_object
+                if discourse_unit.is_empty:
+                    if type_fits:
+                        discourse_unit.semantic_object = semantic_object
+                        self.insertion_successfull = True
                 else:
                     for child in discourse_unit.children:
                         child.accept_visitor(self)
 
-        self._tree_root.accept_visitor(InsertionVisitor())
+        inserter = InsertionVisitor()
+        self._tree_root.accept_visitor(inserter)
+
+        return inserter.insertion_successfull
 
     def is_rooted(self):
         return self._tree_root.semantic_object is not None
