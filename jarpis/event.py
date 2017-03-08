@@ -118,15 +118,15 @@ class Event(object):
 
 
 class Birthday(Event):
-    def __init__(self, id, description, start, end, private, creator, type, series, params = {}):
-        Event.__init__(self, id, description, start, end, private, creator, type, series)
+    def __init__(self, id, description, start, end, private, creator, series, params = {}):
+        Event.__init__(self, id, description, start, end, private, creator, EventType.getTypeIdByName("birthday"), series)
         self._params = params
 
     @staticmethod
     def fromResultToObject(result):
         identity = result[0]
         params = EventParameter.loadParameterById(identity)
-        event = Birthday(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], params)
+        event = Birthday(result[0], result[1], result[2], result[3], result[4], result[5], result[7], params)
         return event
 
     def create(self):
@@ -146,6 +146,44 @@ class Birthday(Event):
         super(Birthday, self).delete()
         c = conn.cursor()
         #TODO: Find out if sqlite supports delete cascade
+        c.execute("DELETE FROM EVENT_PARAMETER WHERE FK_EVENT = ?", (self._id,))
+        conn.commit()
+        return True
+
+    def __repr__(self, *args, **kwargs):
+        return "ID=%s, Description=%s, START=%s, END=%s, PRIVATE=%s, CREATOR=%s, TYPE=%s, SERIES=%s, PARAMS=%s" % (
+            self._id, self._description, self._start, self._end, self._private, self._creator, self._type, self._series, self._params)
+
+
+class Shopping(Event):
+    def __init__(self, id, description, start, end, private, creator, series, params):
+        Event.__init__(self, id, description, start, end, private, creator, EventType.getTypeIdByName("shopping"), series)
+        self._params = params
+
+    @staticmethod
+    def fromResultToObject(result):
+        identity = result[0]
+        params = EventParameter.loadParameterById(identity)
+        event = Shopping(result[0], result[1], result[2], result[3], result[4], result[5], result[7], params)
+        return event
+
+    def create(self):
+        super(Shopping, self).create()
+
+        c = conn.cursor()
+        c.execute("SELECT last_insert_rowid()")
+        result = c.fetchone()
+
+        for idx, item in enumerate(self._params):
+            EventParameter.insert(result[0], "shopping_item"+str(idx), item)
+
+        conn.commit()
+        return self
+
+    def delete(self):
+        super(Shopping, self).delete()
+        c = conn.cursor()
+        #TODO: ADD CASCADE ON DELETE FOR TABLE
         c.execute("DELETE FROM EVENT_PARAMETER WHERE FK_EVENT = ?", (self._id,))
         conn.commit()
         return True
@@ -209,8 +247,10 @@ class EventType(object):
             return Event.fromResultToObject(result)
         elif eventType == 2:
             return Birthday.fromResultToObject(result)
+        elif eventType == 3:
+            return Shopping.fromResultToObject(result)
 
-    types = {1:'default', 2: 'birthday'}
+    types = {1:'default', 2: 'birthday', 3: 'shopping'}
 
     @staticmethod
     def getTypeIdByName(name):
