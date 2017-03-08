@@ -51,7 +51,7 @@ class EventTest(unittest.TestCase):
     def test_create_birthday_event(self):
         subject = "Kevin"
         level = "private"
-        event = Birthday(-1000, "Geburtstagsparty", time.time(), time.time(), level, 1, EventType.getTypeIdByName("birthday"), None, {"subject":subject})
+        event = Birthday(-1000, "Geburtstagsparty", time.time(), time.time(), level, 1, None, {"subject":subject})
         TestDBUtil.execute(event.create, [])
         result_event = TestDBUtil.execute(Event.findOneById, [-1000])
         self.assertEqual(result_event._params["subject"], "Kevin")
@@ -62,8 +62,7 @@ class EventTest(unittest.TestCase):
                              EventType.getTypeIdByName("default"), None)
 
         subject = "Kevin"
-        birthday_event = Birthday(-1000, "Geburtstagsparty", time.time(), time.time(), level, 1,
-                               EventType.getTypeIdByName("birthday"), None, {"subject": subject})
+        birthday_event = Birthday(-1000, "Geburtstagsparty", time.time(), time.time(), level, 1, None, {"subject": subject})
 
         TestDBUtil.execute(default_event.create, [])
         TestDBUtil.execute(birthday_event.create, [])
@@ -76,8 +75,7 @@ class EventTest(unittest.TestCase):
     def test_delete_birthday_event(self):
         level = "private"
         subject = "Kevin"
-        birthday_event = Birthday(-1001, "Geburtstagsparty", time.time(), time.time(), level, 1,
-                                 EventType.getTypeIdByName("birthday"), None, {"subject": subject})
+        birthday_event = Birthday(-1001, "Geburtstagsparty", time.time(), time.time(), level, 1,None, {"subject": subject})
 
         TestDBUtil.execute(birthday_event.create, [])
         self.assertIsNotNone(TestDBUtil.execute(Birthday.findOneById, [-1001]))
@@ -88,11 +86,10 @@ class EventTest(unittest.TestCase):
     def test_delete_birthday_event_parameters(self):
         level = "private"
         subject = "Kevin"
-        birthday_event = Birthday(-1001, "Geburtstagsparty", time.time(), time.time(), level, 1,
-                                 EventType.getTypeIdByName("birthday"), None, {"subject": subject})
+        birthday_event = Birthday(-1001, "Geburtstagsparty", time.time(), time.time(), level, 1, None, {"subject": subject})
 
         TestDBUtil.execute(birthday_event.create, [])
-        self.assertIsNotNone(TestDBUtil.execute(Birthday.findOneById, [-1001]))
+        self.assertIsNotNone(TestDBUtil.execute(Event.findOneById, [-1001]))
         params = TestDBUtil.execute(EventParameter.loadParameterById, [birthday_event._id])
         self.assertIsNotNone(params)
         TestDBUtil.execute(birthday_event.delete, [])
@@ -101,6 +98,26 @@ class EventTest(unittest.TestCase):
 
         params_from_deleted_event = TestDBUtil.execute(EventParameter.loadParameterById, [birthday_event._id])
         self.assertEqual(params_from_deleted_event, {})
+
+    def test_create_shopping_event(self):
+        shopping_items = ['waffeln','kekse','schoggi']
+        level = "private"
+        event = Shopping(-1000, "Wocheneinkauf", time.time(), time.time(), level, 1, None, shopping_items)
+        TestDBUtil.execute(event.create, [])
+        result_event = TestDBUtil.execute(Event.findOneById, [-1000])
+        params = TestDBUtil.execute(EventParameter.loadParameterById, [result_event._id])
+        self.assertEqual(len(params), 3)
+
+    def test_delete_shopping_event(self):
+        shopping_items = ['waffeln', 'kekse', 'schoggi']
+        level = "private"
+        event = Shopping(-1001, "Wocheneinkauf", time.time(), time.time(), level, 1, None, shopping_items)
+
+        TestDBUtil.execute(event.create, [])
+        self.assertIsNotNone(TestDBUtil.execute(Event.findOneById, [-1001]))
+        TestDBUtil.execute(event.delete, [])
+        with self.assertRaises(EventNotFoundException):
+            TestDBUtil.execute(Event.findOneById, [-1001])
 
     def tearDown(self):
         TestDBUtil.execute(Event.dropEventTable, [])
