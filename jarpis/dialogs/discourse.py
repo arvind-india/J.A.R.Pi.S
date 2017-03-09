@@ -118,7 +118,7 @@ class DiscourseTree:
         return inserter.insertion_successfull
 
     def is_rooted(self):
-        return self._tree_root.semantic_object is not None
+        return not self._tree_root.is_empty
 
     def get_next_unresolved_semantic_object(self):
         root = self._tree_root
