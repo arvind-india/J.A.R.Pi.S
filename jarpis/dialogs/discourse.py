@@ -126,25 +126,21 @@ class DiscourseTree:
         class UnresolvedObjectVisitor:
 
             def visit(self, discourse_unit):
-                found_empty_child = False
-
                 for child in discourse_unit.children:
                     if self.resolvable_object_found:
                         return
 
-                    if child.is_empty:
-                        found_empty_child = True
+                    if child.is_resolved or child.is_empty:
                         continue
 
-                    if not child.is_resolved:
-                        child.accept_visitor(self)
+                    child.accept_visitor(self)
 
                 # if discourse_unit == root:
                 #     for child in discourse_unit.children:
                 #         if child.semantic_object is None:
                 #             self.object_to_resolve = None
                 #             return
-                if not found_empty_child:
+                if not self.resolvable_object_found:
                     self.object_to_resolve = discourse_unit.semantic_object
 
             @property
