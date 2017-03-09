@@ -98,6 +98,7 @@ class DiscourseTree:
 
     def insert(self, semantic_object):
         class InsertionVisitor:
+
             def __init__(self):
                 self.insertion_successfull = False
 
@@ -121,8 +122,6 @@ class DiscourseTree:
         return not self._tree_root.is_empty
 
     def get_next_unresolved_semantic_object(self):
-        root = self._tree_root
-
         class UnresolvedObjectVisitor:
 
             def visit(self, discourse_unit):
@@ -135,11 +134,6 @@ class DiscourseTree:
 
                     child.accept_visitor(self)
 
-                # if discourse_unit == root:
-                #     for child in discourse_unit.children:
-                #         if child.semantic_object is None:
-                #             self.object_to_resolve = None
-                #             return
                 if not self.resolvable_object_found:
                     self.object_to_resolve = discourse_unit.semantic_object
 
