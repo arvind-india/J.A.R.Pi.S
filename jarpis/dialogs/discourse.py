@@ -184,12 +184,16 @@ class DiscourseTree:
 
 class DiscourseUnit:
 
-    def __init__(self, evaluation_strategy, entity_type, children):
+    def __init__(self, evaluation_strategy, entity_type, children=None):
         self._evaluation_strategy = evaluation_strategy
         self._is_resolved = False
         self._type = entity_type
-        self.children = children
         self._semantic_object = None
+
+        if children is None:
+            children = []
+
+        self.children = children
 
     @property
     def is_resolved(self):
