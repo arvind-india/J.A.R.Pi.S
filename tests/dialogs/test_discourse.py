@@ -1,9 +1,11 @@
-from unittest import TestCase
+from __future__ import absolute_import
+
+import unittest
 from jarpis.dialogs.discourse import DiscourseUnit, DiscourseTree
 from jarpis.dialogs.semantics import SemanticClass
 
 
-class A_semantic_object_can_be_correctly_inserted_into_a_discourse_tree(TestCase):
+class A_semantic_object_can_be_correctly_inserted_into_a_discourse_tree(unittest.TestCase):
 
     def test_if_the_appropriate_discourse_unit_is_the_tree_root(self):
         # arrange
@@ -44,10 +46,20 @@ class A_semantic_object_can_be_correctly_inserted_into_a_discourse_tree(TestCase
         self.assertIs(target_unit.semantic_object, object_to_insert)
 
     def test_if_the_appropriate_discourse_unit_is_a_leaf(self):
-
         # arrange
+        leaf_nodes = [DiscourseUnit(None, "AppropriateType")]
+        root_children = [DiscourseUnit(None, "InappropriateType1", leaf_nodes)]
+        root = DiscourseUnit(None, "InappropriateType2", root_children)
+        discourse_tree = DiscourseTree(root)
+        object_to_insert = SemanticClass(None, "AppropriateType")
+
+        target_unit = leaf_nodes[0]
 
         # act
+        discourse_tree.insert(object_to_insert)
 
         # assert
-        self.fail()
+        self.assertTrue(root.is_empty)
+        self.assertTrue(root_children[0].is_empty)
+        self.assertFalse(target_unit.is_empty)
+        self.assertIs(target_unit.semantic_object, object_to_insert)
