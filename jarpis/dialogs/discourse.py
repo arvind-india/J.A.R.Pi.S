@@ -116,10 +116,9 @@ class DiscourseTree:
             def visit(self, discourse_unit):
                 type_fits = discourse_unit.entity_type == semantic_object.entity_type
 
-                if discourse_unit.is_empty:
-                    if type_fits:
-                        discourse_unit.semantic_object = semantic_object
-                        self.insertion_successfull = True
+                if discourse_unit.is_empty and type_fits:
+                    discourse_unit.semantic_object = semantic_object
+                    self.insertion_successfull = True
                 else:
                     for child in discourse_unit.children:
                         child.accept_visitor(self)
