@@ -121,7 +121,7 @@ class DiscourseTree:
     def is_rooted(self):
         return not self._tree_root.is_empty
 
-    def get_next_unresolved_semantic_object(self):
+    def get_next_unresolved_discourse_unit(self):
         class UnresolvedObjectVisitor:
 
             def visit(self, discourse_unit):
@@ -135,15 +135,15 @@ class DiscourseTree:
                     child.accept_visitor(self)
 
                 if not self.resolvable_object_found:
-                    self.object_to_resolve = discourse_unit.semantic_object
+                    self.discourse_unit = discourse_unit
 
             @property
             def resolvable_object_found(self):
-                return self.object_to_resolve is not None
+                return self.discourse_unit is not None
 
         visitor = UnresolvedObjectVisitor()
         self._tree_root.accept_visitor(visitor)
-        return visitor.object_to_resolve
+        return visitor.discourse_unit
 
     def get_next_empty_discourse_unit(self):
         class EmpyDiscourseUnitVisitor:
