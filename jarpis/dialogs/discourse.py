@@ -45,9 +45,12 @@ class DialogManager:
             communication.publish("noFittingDiscourseTreeFound")
             return
 
-        object_to_resolve = discourse_tree.get_next_unresolved_semantic_object()
-        if object_to_resolve is not None:
-            communication.publish("evaluationRequest", object_to_resolve)
+        unresolved_discourse_unit = discourse_tree.get_next_unresolved_discourse_unit()
+        if unresolved_discourse_unit is not None:
+            self._set_currently_evaluated_discourse_unit(
+                unresolved_discourse_unit)
+            communication.publish("evaluationRequest",
+                                  unresolved_discourse_unit.semantic_object)
         else:
             empty_discourse_unit = discourse_tree.get_next_empty_discourse_unit()
 
@@ -71,6 +74,12 @@ class DialogManager:
             # TODO is a Nullobject-pattern-like tree an option?
             return None
 
+    def _set_currently_evaluated_discourse_unit(self, unit):
+        self._currently_evaluated_discourse_unit = unit
+
+    def _reset_currently_evaluated_discourse_unit(self):
+        del self._currently_evaluated_discourse_unit
+
     def _set_current_discourse_tree(self, tree):
         self._current_discourse_tree = tree
 
@@ -81,8 +90,10 @@ class DialogManager:
         jarpis.dialogs.communication.publish("renderLatestResponse")
 
     def _semantic_object_evaluated(self, semantic_object):
-        # TODO need to know which semantic_object was evaluated
-        pass
+        self._currently_evaluated_discourse_unit.semantic_object = semantic_object
+        self._reset_currently_evaluated_discourse_unit()
+
+        # TODO check if the according tree is resolved and execute action
 
     def _semantic_object_evaluation_failed(self, semantic_object):
         pass
