@@ -1,7 +1,7 @@
 import sqlite3
 import croniter
 import datetime
-import time
+import copy
 
 conn = None
 
@@ -409,12 +409,18 @@ class Repeating(object):
         return event
 
     @staticmethod
-    def fromResultToObject(result):
-        return Repeating(result[0], result[1], result[2], result[3])
+    def getNextDates(event, count):
+        dates = []
+
+        for x in range(0, count):
+            nextEvent = copy.copy(Repeating.getNextDate(event))
+            dates.append(nextEvent)
+
+        return dates
 
     @staticmethod
-    def getNextDays():
-        pass
+    def fromResultToObject(result):
+        return Repeating(result[0], result[1], result[2], result[3])
 
 
 class DBUtil():
