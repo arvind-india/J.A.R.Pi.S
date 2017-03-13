@@ -1,6 +1,6 @@
 import sqlite3
-import croniter
 import datetime
+from dateutil.relativedelta import relativedelta
 import copy
 
 conn = None
@@ -42,6 +42,7 @@ class Event(object):
     def fromResultToObject(result):
         start = None
         end = None
+
         if result[2] is not None:
             start = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S.%f")
 
@@ -359,18 +360,24 @@ class Privacy(object):
 
 class Repeating(object):
 
-    def __init__(self, id, start, end, cron):
+    def __init__(self, id, start, end, interval):
         self._id = id
         self._start = start
         self._end = end
-        self._cron = cron
+        self._interval = interval
+
+    @staticmethod
+    def findById(id):
+        c = conn.cursor()
+        c.execute("SELECT * FROM REPEATING WHERE ID = ?", (id,))
+        return Repeating.fromResultToObject(c.fetchone())
 
     @staticmethod
     def createRepeatingTable():
         c = conn.cursor()
 
         try:
-            c.execute("CREATE TABLE REPEATING(ID INTEGER PRIMARY KEY autoincrement, START DATE, END DATE, CRON TEXT);")
+            c.execute("CREATE TABLE REPEATING(ID INTEGER PRIMARY KEY autoincrement, START DATE, END DATE, INTERVAL TEXT);")
         except sqlite3.OperationalError as err:
             print("CREATE TBALE WARNING: {0}".format(err))
 
@@ -378,7 +385,12 @@ class Repeating(object):
 
     def insert(self):
         c = conn.cursor()
-        c.execute("INSERT INTO REPEATING VALUES(null, ?, ?, ?)", (self._start, self._end, self._cron,))
+        c.execute("INSERT INTO REPEATING VALUES(null, ?, ?, ?)", (self._start, self._end, self._interval,))
+        conn.commit()
+
+    def update(self):
+        c = conn.cursor()
+        c.execute("UPDATE REPEATING SET START = ?, END = ?, INTERVAL = ? WHERE ID = ?", (self._start,self._end, self._interval, self._id))
         conn.commit()
 
     @staticmethod
@@ -400,13 +412,21 @@ class Repeating(object):
         result = cur.fetchone()
         repeat = Repeating.fromResultToObject(result)
 
-        duration = event._end - event._start
-
-        nextDate = croniter.croniter(repeat._cron, event._start).get_next(datetime.datetime)
-        event._start = nextDate
-        event._end = event._start + duration
+        event._start = Repeating.calcNextDate(event._start, repeat._interval)
+        event._end = Repeating.calcNextDate(event._end, repeat._interval)
 
         return event
+
+    @staticmethod
+    def calcNextDate(date, interval):
+        if interval == "daily":
+            return date + relativedelta(days=1)
+        elif interval == "weekly":
+            return date + relativedelta(weeks=1)
+        elif interval == "monthly":
+            return date + relativedelta(months=1)
+        elif interval == "yearly":
+            return date + relativedelta(years=1)
 
     @staticmethod
     def getNextDates(event, count):
