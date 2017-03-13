@@ -1,4 +1,7 @@
 import sqlite3
+import croniter
+import datetime
+import time
 
 conn = None
 
@@ -37,7 +40,15 @@ class Event(object):
 
     @staticmethod
     def fromResultToObject(result):
-        return Event(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7])
+        start = None
+        end = None
+        if result[2] is not None:
+            start = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S.%f")
+
+        if result[3] is not None:
+            end = datetime.datetime.strptime(result[3], "%Y-%m-%d %H:%M:%S.%f")
+
+        return Event(result[0], result[1], start, end, result[4], result[5], result[6], result[7])
 
     def create(self):
         c = conn.cursor()
@@ -343,6 +354,67 @@ class Privacy(object):
 
     def __repr__(self):
         return "States: %s" % (self.levels)
+
+
+
+class Repeating(object):
+
+    def __init__(self, id, start, end, cron):
+        self._id = id
+        self._start = start
+        self._end = end
+        self._cron = cron
+
+    @staticmethod
+    def createRepeatingTable():
+        c = conn.cursor()
+
+        try:
+            c.execute("CREATE TABLE REPEATING(ID INTEGER PRIMARY KEY autoincrement, START DATE, END DATE, CRON TEXT);")
+        except sqlite3.OperationalError as err:
+            print("CREATE TBALE WARNING: {0}".format(err))
+
+        conn.commit()
+
+    def insert(self):
+        c = conn.cursor()
+        c.execute("INSERT INTO REPEATING VALUES(null, ?, ?, ?)", (self._start, self._end, self._cron,))
+        conn.commit()
+
+    @staticmethod
+    def dropRepeatingTable():
+        c = conn.cursor()
+
+        try:
+            c.execute("DROP TABLE PRIVACY")
+        except sqlite3.OperationalError as err:
+            print("DROP TBALE WARNING: {0}".format(err))
+
+        conn.commit()
+
+    @staticmethod
+    def getNextDate(event):
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM REPEATING WHERE ID = ?", (event._series,))
+
+        result = cur.fetchone()
+        repeat = Repeating.fromResultToObject(result)
+
+        duration = event._end - event._start
+
+        nextDate = croniter.croniter(repeat._cron, event._start).get_next(datetime.datetime)
+        event._start = nextDate
+        event._end = event._start + duration
+
+        return event
+
+    @staticmethod
+    def fromResultToObject(result):
+        return Repeating(result[0], result[1], result[2], result[3])
+
+    @staticmethod
+    def getNextDays():
+        pass
 
 
 class DBUtil():
