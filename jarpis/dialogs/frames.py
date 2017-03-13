@@ -57,7 +57,7 @@ List = {
     "slots": {
         "description": Description,
         "creator": User,
-        "Visibility": Visibility,
+        "visibility": Visibility,
         "items": [Item]
     }
 }
@@ -87,7 +87,7 @@ EventByName = {
 EventByDate = {
     "entityType": "Event",
     "slots": {
-        "perdiod": Period
+        "period": Period
     },
     "responses": {}
 }
