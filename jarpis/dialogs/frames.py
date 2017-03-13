@@ -39,8 +39,26 @@ Visibility = {
     }
 }
 
+
+Description = {}
+
+Status = {}
+
 Item = {
-    # TODO define
+    "entityType": "ListItem",
+    "slots": {
+        "description": Description,
+        "status": Status
+    }
+}
+
+List = {
+    "entityType": "List",
+    "slots": {
+        "description": Description,
+        "creator": User,
+        "items": [Item]
+    }
 }
 
 Event = {
@@ -52,7 +70,7 @@ Event = {
         "creator": User,
         "scheduling": Scheduling,
         "visibility": Visibility,
-        "listItems": [Item]
+        "list": List
     },
     "responses": {}
 }
@@ -77,6 +95,7 @@ EventsByTypeQuery = {
     "entityType": None,
     "slots": {
         "type": EventType,
+        "period": Period,
         "events": [Event]
     }
 }
@@ -105,5 +124,21 @@ EventsByVisibilityQuery = {
         "creator": User,
         "period": Period,
         "events": [Event]
+    }
+}
+
+ListByName = {
+    "entityType": "List",
+    "slots": {
+        "event": Event,
+        "name": Description
+    }
+}
+
+ListByCreator = {
+    "entityType": "List",
+    "slots": {
+        "event": Event,
+        "Creator": User
     }
 }
