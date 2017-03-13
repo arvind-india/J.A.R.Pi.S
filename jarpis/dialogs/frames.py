@@ -7,6 +7,9 @@ Period = {
     "slots": {
         "start": Date,
         "end": Date
+    },
+    "responses": {
+        "missing": ["When should this event start?", "From when to when shall I schedule the event?", "Until when shall I schedule it?"]
     }
 }
 
@@ -16,7 +19,8 @@ User = {
     "entityType": "User",
     "slots": {
         "name": Username
-    }
+    },
+    "responses": {}
 }
 
 Scheduling = {
@@ -29,6 +33,9 @@ Visibility = {
     "entityType": "Visibility",
     "slots": {
         "privacy": Privacy
+    },
+    "responses": {
+        "missing": "Shall I consider only your private or all Events?"
     }
 }
 
@@ -46,21 +53,24 @@ Event = {
         "scheduling": Scheduling,
         "visibility": Visibility,
         "listItems": [Item]
-    }
+    },
+    "responses": {}
 }
 
 EventByName = {
     "entityType": "Event",
     "slots": {
         "name": EventName
-    }
+    },
+    "responses": {}
 }
 
 EventByDate = {
     "entityType": "Event",
     "slots": {
-
-    }
+        "perdiod": Period
+    },
+    "responses": {}
 }
 
 EventsByTypeQuery = {
