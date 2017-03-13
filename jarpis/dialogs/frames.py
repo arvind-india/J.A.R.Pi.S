@@ -57,6 +57,7 @@ List = {
     "slots": {
         "description": Description,
         "creator": User,
+        "Visibility": Visibility,
         "items": [Item]
     }
 }
@@ -139,6 +140,24 @@ ListByCreator = {
     "entityType": "List",
     "slots": {
         "event": Event,
-        "Creator": User
+        "creator": User
+    }
+}
+
+ListByVisibility = {
+    "entityType": "List",
+    "slots": {
+        "event": Event,
+        "creator": User,
+        "visibility": Visibility
+    }
+}
+
+FinishedListItemsQuery = {
+    "entityType": None,
+    "slots": {
+        "status": Status,
+        "list": List,
+        "items": [Item]
     }
 }
