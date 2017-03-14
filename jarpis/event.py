@@ -13,7 +13,6 @@ class Event(object):
         self._start = start.replace(microsecond=0)
         self._end = end.replace(microsecond=0)
 
-## WTF VALIDATION STARTS: im open for smarter solutions... ##
         if private is None:
             self._private = Privacy.getLevelsIdByName("public")
         elif isinstance(private, int):
@@ -28,7 +27,6 @@ class Event(object):
                 self._private = id
             else:
                 raise TypeError("Give privacy level is not valid: %s" % (private))
-## WTF VALIDATION ENDS ##
 
         self._creator = creator
 
@@ -63,7 +61,6 @@ class Event(object):
         except sqlite3.IntegrityError as err:
             print("Error while inserting: {0}".format(err))
 
-
         conn.commit()
         return self
 
@@ -80,7 +77,6 @@ class Event(object):
         conn.commit()
         return self
 
-    #TODO Move this to Calendar Class
     @staticmethod
     def findById(id):
         c = conn.cursor()
@@ -349,6 +345,7 @@ class EventType(object):
     def __repr__(self):
         return "Event Types: %s" % (self.types)
 
+
 class Privacy(object):
     def __init__(self):
         pass
@@ -397,7 +394,6 @@ class Privacy(object):
 
     def __repr__(self):
         return "States: %s" % (self.levels)
-
 
 
 class Repeating(object):
