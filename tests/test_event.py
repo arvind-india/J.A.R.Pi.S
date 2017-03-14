@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 import unittest
-import time
 from jarpis.event import *
 
 
