@@ -163,29 +163,50 @@ class DiscourseTree:
         return visitor.discourse_unit
 
     def get_next_empty_discourse_unit(self):
-        class EmpyDiscourseUnitVisitor:
+        # This method is only called if get_next_unresolved_discourse_unit()
+        # returns no discourse unit. Therefore the following visitor
+        # is based on the assumption that there is no unresolved leaf node and
+        # there is at least one empty leaf node.
+        #       u
+        #      /|\
+        #     / | \
+        #    r  o  u
+        #          |
+        #          o    is valid/possible at this point,
+        #
+        # whereas
+        #       u
+        #      /|\
+        #     / | \
+        #    r  o  u
+        #          |
+        #          u    is not valid/possible.
+        class EmptyDiscourseUnitVisitor:
 
             def visit(self, discourse_unit):
+                unit_has_empty_child = False
 
                 for child in discourse_unit.children:
                     if self.empty_unit_found:
-                        break
+                        return
 
                     if child.is_resolved:
                         continue
 
                     if child.is_empty:
-                        self.discourse_unit = child
-                        return
+                        unit_has_empty_child = True
+                        break
 
                     child.accept_visitor(self)
-                else:
-                    return
+                    unit_has_empty_child = False
+
+                if unit_has_empty_child:
+                    self.discourse_unit = discourse_unit
 
             def empty_unit_found(self):
                 return self.discourse_unit is not None
 
-        visitor = EmpyDiscourseUnitVisitor()
+        visitor = EmptyDiscourseUnitVisitor()
         self._tree_root.accept_visitor(visitor)
         return visitor.discourse_unit
 
