@@ -87,7 +87,7 @@ class Event(object):
         raise EventNotFoundException("No Event found with given ID: %s" % (id))
 
     @staticmethod
-    def findEventsByDate(from_date, to_date):
+    def findByDate(from_date, to_date):
         c = conn.cursor()
         c.execute("SELECT * FROM EVENT WHERE start_date > ? AND end_date < ?", (from_date, to_date,))
 
