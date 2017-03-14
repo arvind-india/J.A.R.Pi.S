@@ -36,16 +36,16 @@ class CalendarTest(unittest.TestCase):
 
 
     def test_find_series_events(self):
-        event1 = Event(-1010, "Neue Party", datetime.datetime(2017,1,10,10,0), datetime.datetime(2017,1,10,11,0), 1, 1, 1, 1)
-        event2 = Event(-1011, "Alte Party", datetime.datetime(2017,1,12,10,0), datetime.datetime(2017,1,12,11,0), 1, 1, 1, None)
-        series = Repeating(1, datetime.datetime(2017,1,10,10,0), datetime.datetime(2017,1,13,11,0), "daily")
+        event1 = Event(-1010, "Alte Party", datetime.datetime(2017,1,10,10,0), datetime.datetime(2017,1,10,11,0), 1, 1, 1, 1)
+        event2 = Event(-1011, "Neue Party", datetime.datetime(2017,1,12,10,0), datetime.datetime(2017,1,12,11,0), 1, 1, 1, None)
+        series = Repeating(1, datetime.datetime(2017,1,10,10,0), datetime.datetime(2017,1,15,11,0), "daily")
         TestDBUtil.execute(event1.create,[])
         TestDBUtil.execute(event2.create, [])
         TestDBUtil.execute(series.create, [])
 
-        list = TestDBUtil.execute(Event.findByDate, [datetime.datetime(2017,1,11,10,0), datetime.datetime(2017,1,13,10,0)])
+        list = TestDBUtil.execute(Event.findByDate, [datetime.datetime(2017,1,9,11,0), datetime.datetime(2017,1,13,10,0)])
         for x in list:
-            print("Blub %s " % x)
+            print("RESULT: %s " % x)
 
     def tearDown(self):
         TestDBUtil.execute(Event.dropEventTable, [])

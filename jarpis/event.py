@@ -101,10 +101,12 @@ class Event(object):
         for result in c.fetchall():
             event = EventType.convert(result)
             if event._series is not None:
-                print("START: %s " % result[9])
-                print("END: %s " % result[10])
-
-            eventList.append(event)
+                nextEvent = Repeating.getNextDate(event)
+                while nextEvent is not None and to_date >= nextEvent._end:
+                    eventList.append(copy.copy(nextEvent))
+                    nextEvent = Repeating.getNextDate(event)
+            else:
+                eventList.append(event)
 
         return eventList
 
@@ -452,17 +454,19 @@ class Repeating(object):
         result = cur.fetchone()
         repeat = Repeating.fromResultToObject(result)
 
-        newStart = Repeating.addDateInterval(event._start, repeat._interval)
-        newEnd = Repeating.addDateInterval(event._end, repeat._interval)
+        newStart = Repeating.addIntervalToDate(event._start, repeat._interval)
+        newEnd = Repeating.addIntervalToDate(event._end, repeat._interval)
 
         if newStart >= repeat._start and newEnd <= repeat._end:
             event._start = newStart
             event._end = newEnd
+        else:
+            return None
 
         return event
 
     @staticmethod
-    def addDateInterval(date, interval):
+    def addIntervalToDate(date, interval):
         if interval == "daily":
             return date + relativedelta(days=1)
         elif interval == "weekly":
