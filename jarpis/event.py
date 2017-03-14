@@ -59,7 +59,7 @@ class Event(object):
                 (self._id, self._description, self._start, self._end, self._private, self._creator, self._type,
                  self._series))
         except sqlite3.IntegrityError as err:
-            print("Error while inserting: {0}".format(err))
+            print("Error while inserting Event with ID {1}: {0}".format(err, self._id))
 
         conn.commit()
         return self
@@ -496,27 +496,16 @@ class Repeating(object):
 
         return Repeating(result[0], start, end, result[3])
 
-
 class DBUtil():
     result = None
 
     @staticmethod
-    def execute(function, params):
+    def execute(function, params, production=None):
         global conn
-        conn = sqlite3.connect("develop.db")
-        result = function(*params)
-        conn.close()
+        if production is None:
+            production = "test.db"
 
-        return result
-
-
-class TestDBUtil():
-    result = None
-
-    @staticmethod
-    def execute(function, params):
-        global conn
-        conn = sqlite3.connect("test.db")
+        conn = sqlite3.connect(production)
         result = function(*params)
         conn.close()
 
