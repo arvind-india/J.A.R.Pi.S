@@ -9,8 +9,8 @@ class Event(object):
     def __init__(self, id, description, start, end, private, creator, type, series):
         self._id = id
         self._description = description
-        self._start = start
-        self._end = end
+        self._start = start.replace(microsecond=0)
+        self._end = end.replace(microsecond=0)
 
 ## WTF VALIDATION STARTS: im open for smarter solutions... ##
         if private is None:
@@ -44,10 +44,10 @@ class Event(object):
         end = None
 
         if result[2] is not None:
-            start = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S.%f")
+            start = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S")
 
         if result[3] is not None:
-            end = datetime.datetime.strptime(result[3], "%Y-%m-%d %H:%M:%S.%f")
+            end = datetime.datetime.strptime(result[3], "%Y-%m-%d %H:%M:%S")
 
         return Event(result[0], result[1], start, end, result[4], result[5], result[6], result[7])
 
@@ -138,7 +138,17 @@ class Birthday(Event):
     def fromResultToObject(result):
         identity = result[0]
         params = EventParameter.loadParameterById(identity)
-        event = Birthday(result[0], result[1], result[2], result[3], result[4], result[5], result[7], params)
+
+        start = None
+        end = None
+
+        if result[2] is not None:
+            start = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S")
+
+        if result[3] is not None:
+            end = datetime.datetime.strptime(result[3], "%Y-%m-%d %H:%M:%S")
+
+        event = Birthday(result[0], result[1], start, end, result[4], result[5], result[7], params)
         return event
 
     def create(self):
@@ -176,7 +186,17 @@ class Shopping(Event):
     def fromResultToObject(result):
         identity = result[0]
         params = EventParameter.loadParameterById(identity)
-        event = Shopping(result[0], result[1], result[2], result[3], result[4], result[5], result[7], params)
+
+        start = None
+        end = None
+
+        if result[2] is not None:
+            start = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S")
+
+        if result[3] is not None:
+            end = datetime.datetime.strptime(result[3], "%Y-%m-%d %H:%M:%S")
+
+        event = Shopping(result[0], result[1], start, end, result[4], result[5], result[7], params)
         return event
 
     def create(self):
@@ -385,7 +405,7 @@ class Repeating(object):
 
     def insert(self):
         c = conn.cursor()
-        c.execute("INSERT INTO REPEATING VALUES(null, ?, ?, ?)", (self._start, self._end, self._interval,))
+        c.execute("INSERT INTO REPEATING VALUES(?, ?, ?, ?)", (self._id, self._start, self._end, self._interval,))
         conn.commit()
 
     def update(self):
@@ -398,7 +418,7 @@ class Repeating(object):
         c = conn.cursor()
 
         try:
-            c.execute("DROP TABLE PRIVACY")
+            c.execute("DROP TABLE REPEATING")
         except sqlite3.OperationalError as err:
             print("DROP TBALE WARNING: {0}".format(err))
 
@@ -440,7 +460,17 @@ class Repeating(object):
 
     @staticmethod
     def fromResultToObject(result):
-        return Repeating(result[0], result[1], result[2], result[3])
+
+        start = None
+        end = None
+
+        if result[1] is not None:
+            start = datetime.datetime.strptime(result[1], "%Y-%m-%d %H:%M:%S")
+
+        if result[2] is not None:
+            end = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S")
+
+        return Repeating(result[0], start, end, result[3])
 
 
 class DBUtil():
