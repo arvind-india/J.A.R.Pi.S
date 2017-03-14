@@ -76,7 +76,7 @@ class Event(object):
 
     #TODO Move this to Calendar Class
     @staticmethod
-    def findOneById(id):
+    def findById(id):
         c = conn.cursor()
         c.execute("SELECT * FROM EVENT WHERE ID = ?", (id,))
         result = c.fetchone()
