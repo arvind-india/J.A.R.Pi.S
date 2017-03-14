@@ -135,16 +135,22 @@ class DiscourseTree:
         class UnresolvedObjectVisitor:
 
             def visit(self, discourse_unit):
+                unit_has_empty_child = False
+
                 for child in discourse_unit.children:
                     if self.resolvable_object_found:
                         return
 
-                    if child.is_resolved or child.is_empty:
+                    if child.is_resolved:
+                        continue
+
+                    if child.is_empty:
+                        unit_has_empty_child = True
                         continue
 
                     child.accept_visitor(self)
 
-                if not self.resolvable_object_found:
+                if not unit_has_empty_child:
                     self.discourse_unit = discourse_unit
 
             @property
@@ -162,7 +168,7 @@ class DiscourseTree:
 
                 for child in discourse_unit.children:
                     if self.empty_unit_found:
-                        return
+                        break
 
                     if child.is_resolved:
                         continue
@@ -172,6 +178,8 @@ class DiscourseTree:
                         return
 
                     child.accept_visitor(self)
+                else:
+                    return
 
             def empty_unit_found(self):
                 return self.discourse_unit is not None
