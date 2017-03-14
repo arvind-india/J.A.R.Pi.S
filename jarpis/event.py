@@ -54,10 +54,16 @@ class Event(object):
 
     def create(self):
         c = conn.cursor()
-        c.execute(
-            "INSERT INTO EVENT (ID, DESCRIPTION, START_DATE, END_DATE, PRIVATE, FK_CREATOR, FK_TYPE, FK_SERIES) VALUES(?,?,?,?,?,?,?,?)",
-            (self._id, self._description, self._start, self._end, self._private, self._creator, self._type,
-             self._series))
+
+        try:
+            c.execute(
+                "INSERT INTO EVENT (ID, DESCRIPTION, START_DATE, END_DATE, PRIVATE, FK_CREATOR, FK_TYPE, FK_SERIES) VALUES(?,?,?,?,?,?,?,?)",
+                (self._id, self._description, self._start, self._end, self._private, self._creator, self._type,
+                 self._series))
+        except sqlite3.IntegrityError as err:
+            print("Error while inserting: {0}".format(err))
+
+
         conn.commit()
         return self
 
@@ -89,11 +95,16 @@ class Event(object):
     @staticmethod
     def findByDate(from_date, to_date):
         c = conn.cursor()
-        c.execute("SELECT * FROM EVENT WHERE start_date > ? AND end_date < ?", (from_date, to_date,))
+        c.execute("SELECT * FROM EVENT e LEFT JOIN REPEATING r ON r.id = e.FK_SERIES WHERE (e.START_DATE >= ? AND e.END_DATE <= ?) OR (r.START <= ? AND r.END >= ?)", (from_date, to_date, from_date, to_date,))
 
         eventList = []
         for result in c.fetchall():
-            eventList.append(EventType.convert(result))
+            event = EventType.convert(result)
+            if event._series is not None:
+                print("START: %s " % result[9])
+                print("END: %s " % result[10])
+
+            eventList.append(event)
 
         return eventList
 
@@ -412,7 +423,7 @@ class Repeating(object):
 
         conn.commit()
 
-    def insert(self):
+    def create(self):
         c = conn.cursor()
         c.execute("INSERT INTO REPEATING VALUES(?, ?, ?, ?)", (self._id, self._start, self._end, self._interval,))
         conn.commit()
@@ -441,13 +452,17 @@ class Repeating(object):
         result = cur.fetchone()
         repeat = Repeating.fromResultToObject(result)
 
-        event._start = Repeating.calcNextDate(event._start, repeat._interval)
-        event._end = Repeating.calcNextDate(event._end, repeat._interval)
+        newStart = Repeating.addDateInterval(event._start, repeat._interval)
+        newEnd = Repeating.addDateInterval(event._end, repeat._interval)
+
+        if newStart >= repeat._start and newEnd <= repeat._end:
+            event._start = newStart
+            event._end = newEnd
 
         return event
 
     @staticmethod
-    def calcNextDate(date, interval):
+    def addDateInterval(date, interval):
         if interval == "daily":
             return date + relativedelta(days=1)
         elif interval == "weekly":

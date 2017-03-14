@@ -123,7 +123,7 @@ class EventTest(unittest.TestCase):
         level = "private"
         subject = "Kevin"
         repeatable = Repeating(-1001,datetime.datetime(2017, 3, 14, 9, 30), datetime.datetime(2017, 3, 19, 9, 30),"daily")
-        TestDBUtil.execute(repeatable.insert,[])
+        TestDBUtil.execute(repeatable.create, [])
         repeatingResult = TestDBUtil.execute(Repeating.findById, [-1001])
         birthday = Birthday(-1000, "Geburtstag", datetime.datetime(2017,3,15,9,30), datetime.datetime(2017,3,15,10,0), level, 1, repeatingResult._id, {"subject": subject})
         TestDBUtil.execute(birthday.create, [])
