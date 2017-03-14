@@ -5,6 +5,7 @@ import copy
 
 conn = None
 
+
 class Event(object):
     def __init__(self, id, description, start, end, private, creator, type, series):
         self._id = id
@@ -85,7 +86,6 @@ class Event(object):
 
         raise EventNotFoundException("No Event found with given ID: %s" % (id))
 
-    #TODO Move this to Calendar Class
     @staticmethod
     def findEventsByDate(from_date, to_date):
         c = conn.cursor()
@@ -97,7 +97,6 @@ class Event(object):
 
         return eventList
 
-    # TODO Move this to Calendar Class
     @staticmethod
     def findAll():
         c = conn.cursor()
