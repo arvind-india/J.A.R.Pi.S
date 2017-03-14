@@ -44,8 +44,7 @@ class CalendarTest(unittest.TestCase):
         TestDBUtil.execute(series.create, [])
 
         list = TestDBUtil.execute(Event.findByDate, [datetime.datetime(2017,1,9,11,0), datetime.datetime(2017,1,13,10,0)])
-        for x in list:
-            print("RESULT: %s " % x)
+        self.assertEqual(len(list), 3)
 
     def tearDown(self):
         TestDBUtil.execute(Event.dropEventTable, [])
