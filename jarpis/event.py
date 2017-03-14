@@ -67,7 +67,11 @@ class Event(object):
         return True
 
     def update(self):
-        return "Event updated!"
+        c=conn.cursor()
+        c.execute("UPDATE EVENT SET DESCRIPTION=?, START_DATE=?, END_DATE=?, PRIVATE=?, FK_CREATOR=?, FK_TYPE=?, FK_SERIES=? WHERE ID = ?", (self._description, self._start, self._end, self._private, self._creator, self._type,
+             self._series,self._id))
+        conn.commit()
+        return self
 
     #TODO Move this to Calendar Class
     @staticmethod
@@ -164,6 +168,9 @@ class Birthday(Event):
         conn.commit()
         return self
 
+    def update(self):
+        super(Birthday, self).update()
+
     def delete(self):
         super(Birthday, self).delete()
         c = conn.cursor()
@@ -212,10 +219,12 @@ class Shopping(Event):
         conn.commit()
         return self
 
+    def update(self):
+        super(Shopping, self).update()
+
     def delete(self):
         super(Shopping, self).delete()
         c = conn.cursor()
-        #TODO: ADD CASCADE ON DELETE FOR TABLE
         c.execute("DELETE FROM EVENT_PARAMETER WHERE FK_EVENT = ?", (self._id,))
         conn.commit()
         return True
