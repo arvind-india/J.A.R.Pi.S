@@ -35,7 +35,14 @@ class EventMediator:
         if event not in self._eventHandlers:
             return
 
-        # this will also be the perfect point to trigger a web view update if
+        # TODO The handler calls must be, partly, asynchronous.
+        # This is due to the reason, that if the first event from the
+        # semantic interpreter is published the all the variables and
+        # subsequent method calls are put on the same call stack.
+        # That can result in a pretty large memory consumption of the stack
+        # if you consider this for a whole dialog discourse
+
+        # This will also be the perfect point to trigger a web view update if
         # there's an appropriate 'success' event
         for callHandler in self._eventHandlers[event]:
             callHandler(*with_args, **with_kwargs)

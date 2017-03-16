@@ -10,21 +10,23 @@ class SemanticInterpreter:
         self._semantic_classes = semantic_classes
 
     def interpret(self, utterance):
+        communication = jarpis.dialogs.communication
+
         if utterance is None or not utterance.strip():
-            jarpis.dialogs.communication.publish("onNothingToInterpret")
+            communication.publish("nothingToInterpret")
             return
 
         for semantic_class in self._semantic_classes:
             parser = RobustParser(semantic_class.grammar)
             tree, result = parser.parse(utterance)
             if tree is not None:
-                jarpis.dialogs.communication.publish(
-                    "onSuccessfullInterpretation",
+                communication.publish(
+                    "interpretationSuccessfull",
                     semantic_class.fill_slots(result))
 
         # TODO Do we need to explicitly publish an event if no semantic object could be parsed?
         # Need a boolean then to check if any semantic object could be parsed.
-        jarpis.dialogs.communication.publish("onInterpretationFinished")
+        communication.publish("interpretationFinished")
 
 
 class SemanticClass:
@@ -36,6 +38,10 @@ class SemanticClass:
         self._grammar = grammar
         self._type = type
         self._slots = slots
+
+    @property
+    def entity_type(self):
+        return self._type
 
     @property
     def grammar(self):
