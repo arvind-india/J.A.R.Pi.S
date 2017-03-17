@@ -454,12 +454,12 @@ class Scheduling(object):
         if result is None:
             return None
 
-        repeat = Scheduling.fromResultToObject(result)
+        schedule = Scheduling.fromResultToObject(result)
 
-        newStart = Scheduling.addIntervalToDate(newEvent._start, repeat._interval)
-        newEnd = Scheduling.addIntervalToDate(newEvent._end, repeat._interval)
+        newStart = Scheduling.addIntervalToDate(newEvent._start, schedule._interval)
+        newEnd = Scheduling.addIntervalToDate(newEvent._end, schedule._interval)
 
-        if newStart >= repeat._start and newEnd <= repeat._end:
+        if newStart >= schedule._start and newEnd <= schedule._end:
             newEvent._start = newStart
             newEvent._end = newEnd
         else:

@@ -119,11 +119,11 @@ class EventTest(unittest.TestCase):
         with self.assertRaises(EventNotFoundException):
             DBUtil.execute(Event.findById, [-1001])
 
-    def test_create_repeatable_event(self):
+    def test_create_scheduled_event(self):
         level = "private"
         subject = "Kevin"
-        repeatable = Scheduling(-1001,datetime.datetime(2017, 3, 14, 9, 30), datetime.datetime(2017, 3, 19, 9, 30),"daily")
-        DBUtil.execute(repeatable.create, [])
+        schadule = Scheduling(-1001,datetime.datetime(2017, 3, 14, 9, 30), datetime.datetime(2017, 3, 19, 9, 30),"daily")
+        DBUtil.execute(schadule.create, [])
         schedulingResult = DBUtil.execute(Scheduling.findById, [-1001])
         birthday = Birthday(-1000, "Geburtstag", datetime.datetime(2017,3,15,9,30), datetime.datetime(2017,3,15,10,0), level, 1, schedulingResult._id, {"subject": subject})
         DBUtil.execute(birthday.create, [])
