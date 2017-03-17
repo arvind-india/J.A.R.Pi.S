@@ -124,7 +124,7 @@ class Event(object):
             # c.execute("CREATE TABLE EVENT(ID INTEGER PRIMARY KEY autoincrement,DESCRIPTION INTEGER,START_DATE TEXT,END_DATE TEXT,PRIVATE INTEGER,FK_CREATOR INTEGER,FK_TYPE INTEGER,FK_SERIES INTEGER)")
             c.execute("CREATE TABLE `EVENT` (`ID`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,`DESCRIPTION`	TEXT,`START_DATE`	TEXT,`END_DATE`	TEXT,`PRIVATE`	INTEGER,`FK_CREATOR`	INTEGER,`FK_TYPE`	INTEGER,`FK_SERIES`	INTEGER,FOREIGN KEY(`PRIVATE`) REFERENCES PRIVACY(ID),FOREIGN KEY(`FK_TYPE`) REFERENCES TYPES(ID),FOREIGN KEY(`FK_SERIES`) REFERENCES REPEATING(ID))")
         except sqlite3.OperationalError as err:
-            print("CREATE TBALE WARNING: {0}".format(err))
+            print("CREATE TABLE WARNING: {0}".format(err))
 
         conn.commit()
 
@@ -134,7 +134,7 @@ class Event(object):
         try:
             c.execute("DROP TABLE EVENT")
         except sqlite3.OperationalError as err:
-            print("DROP TBALE WARNING: {0}".format(err))
+            print("DROP TABLE WARNING: {0}".format(err))
         conn.commit()
 
     def __repr__(self, *args, **kwargs):
@@ -269,7 +269,7 @@ class EventParameter(object):
         try:
             c.execute("CREATE TABLE `EVENT_PARAMETER` (`ID`	INTEGER PRIMARY KEY AUTOINCREMENT,`FK_EVENT`	INTEGER,`KEY`	TEXT,`VALUE`	TEXT,FOREIGN KEY(`FK_EVENT`) REFERENCES EVENT(ID));")
         except sqlite3.OperationalError as err:
-            print("CREATE TBALE WARNING: {0}".format(err))
+            print("CREATE TABLE WARNING: {0}".format(err))
 
         conn.commit()
 
@@ -279,7 +279,7 @@ class EventParameter(object):
         try:
             c.execute("DROP TABLE EVENT_PARAMETER")
         except sqlite3.OperationalError as err:
-            print("DROP TBALE WARNING: {0}".format(err))
+            print("DROP TABLE WARNING: {0}".format(err))
         conn.commit()
 
 class EventNotFoundException(Exception):
@@ -324,7 +324,7 @@ class EventType(object):
         try:
             c.execute("CREATE TABLE EVENT_TYPE(ID INTEGER PRIMARY KEY autoincrement, DEFINITION TEXT);")
         except sqlite3.OperationalError as err:
-            print("CREATE TBALE WARNING: {0}".format(err))
+            print("CREATE TABLE WARNING: {0}".format(err))
 
         for key in EventType.types:
             c.execute("INSERT INTO EVENT_TYPE VALUES(?,?)", (key, EventType.types[key]))
@@ -338,7 +338,7 @@ class EventType(object):
         try:
             c.execute("DROP TABLE EVENT_TYPE")
         except sqlite3.OperationalError as err:
-            print("DROP TBALE WARNING: {0}".format(err))
+            print("DROP TABLE WARNING: {0}".format(err))
 
         conn.commit()
 
@@ -374,7 +374,7 @@ class Privacy(object):
         try:
             c.execute("CREATE TABLE PRIVACY(ID INTEGER PRIMARY KEY autoincrement, LEVEL TEXT);")
         except sqlite3.OperationalError as err:
-            print("CREATE TBALE WARNING: {0}".format(err))
+            print("CREATE TABLE WARNING: {0}".format(err))
 
         for key in Privacy.levels:
             c.execute("INSERT INTO PRIVACY VALUES(?,?)", (key, Privacy.levels[key]))
@@ -388,7 +388,7 @@ class Privacy(object):
         try:
             c.execute("DROP TABLE PRIVACY")
         except sqlite3.OperationalError as err:
-            print("DROP TBALE WARNING: {0}".format(err))
+            print("DROP TABLE WARNING: {0}".format(err))
 
         conn.commit()
 
@@ -417,7 +417,7 @@ class Repeating(object):
         try:
             c.execute("CREATE TABLE REPEATING(ID INTEGER PRIMARY KEY autoincrement, START DATE, END DATE, INTERVAL TEXT);")
         except sqlite3.OperationalError as err:
-            print("CREATE TBALE WARNING: {0}".format(err))
+            print("CREATE TABLE WARNING: {0}".format(err))
 
         conn.commit()
 
@@ -438,7 +438,7 @@ class Repeating(object):
         try:
             c.execute("DROP TABLE REPEATING")
         except sqlite3.OperationalError as err:
-            print("DROP TBALE WARNING: {0}".format(err))
+            print("DROP TABLE WARNING: {0}".format(err))
 
         conn.commit()
 
