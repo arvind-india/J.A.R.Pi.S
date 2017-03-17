@@ -122,8 +122,8 @@ class EventTest(unittest.TestCase):
     def test_create_scheduled_event(self):
         level = "private"
         subject = "Kevin"
-        schadule = Scheduling(-1001,datetime.datetime(2017, 3, 14, 9, 30), datetime.datetime(2017, 3, 19, 9, 30),"daily")
-        DBUtil.execute(schadule.create, [])
+        schedule = Scheduling(-1001,datetime.datetime(2017, 3, 14, 9, 30), datetime.datetime(2017, 3, 19, 9, 30),"daily")
+        DBUtil.execute(schedule.create, [])
         schedulingResult = DBUtil.execute(Scheduling.findById, [-1001])
         birthday = Birthday(-1000, "Geburtstag", datetime.datetime(2017,3,15,9,30), datetime.datetime(2017,3,15,10,0), level, 1, schedulingResult._id, {"subject": subject})
         DBUtil.execute(birthday.create, [])
