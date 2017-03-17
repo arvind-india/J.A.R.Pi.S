@@ -8,7 +8,7 @@ class EventTest(unittest.TestCase):
     def setUp(self):
         DBUtil.execute(Event.createEventTable, [])
         DBUtil.execute(EventParameter.createEventParameterTable, [])
-        DBUtil.execute(Repeating.createRepeatingTable, [])
+        DBUtil.execute(Scheduling.createSchedulingTable, [])
 
     def test_create_event(self):
         event = Event(-1000, "Party", datetime.datetime.now(), datetime.datetime.now(), 1, 1, 1, None)
@@ -122,15 +122,15 @@ class EventTest(unittest.TestCase):
     def test_create_repeatable_event(self):
         level = "private"
         subject = "Kevin"
-        repeatable = Repeating(-1001,datetime.datetime(2017, 3, 14, 9, 30), datetime.datetime(2017, 3, 19, 9, 30),"daily")
+        repeatable = Scheduling(-1001,datetime.datetime(2017, 3, 14, 9, 30), datetime.datetime(2017, 3, 19, 9, 30),"daily")
         DBUtil.execute(repeatable.create, [])
-        repeatingResult = DBUtil.execute(Repeating.findById, [-1001])
-        birthday = Birthday(-1000, "Geburtstag", datetime.datetime(2017,3,15,9,30), datetime.datetime(2017,3,15,10,0), level, 1, repeatingResult._id, {"subject": subject})
+        schedulingResult = DBUtil.execute(Scheduling.findById, [-1001])
+        birthday = Birthday(-1000, "Geburtstag", datetime.datetime(2017,3,15,9,30), datetime.datetime(2017,3,15,10,0), level, 1, schedulingResult._id, {"subject": subject})
         DBUtil.execute(birthday.create, [])
         birthdayResult = DBUtil.execute(Event.findById, [-1000])
 
-        self.assertEqual(birthdayResult._series, repeatingResult._id)
-        nextEvent = DBUtil.execute(Repeating.getNextDate, [birthdayResult])
+        self.assertEqual(birthdayResult._series, schedulingResult._id)
+        nextEvent = DBUtil.execute(Scheduling.getNextDate, [birthdayResult])
         self.assertEqual(nextEvent._start, datetime.datetime(2017, 3, 16, 9, 30))
         self.assertEqual(nextEvent._end, datetime.datetime(2017, 3, 16, 10, 0))
 
@@ -138,4 +138,4 @@ class EventTest(unittest.TestCase):
     def tearDown(self):
         DBUtil.execute(Event.dropEventTable, [])
         DBUtil.execute(EventParameter.dropEventParameterTable, [])
-        DBUtil.execute(Repeating.dropRepeatingTable, [])
+        DBUtil.execute(Scheduling.dropSchedulingTable, [])

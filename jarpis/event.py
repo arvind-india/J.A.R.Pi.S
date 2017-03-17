@@ -91,16 +91,16 @@ class Event(object):
     @staticmethod
     def findByDate(from_date, to_date):
         c = conn.cursor()
-        c.execute("SELECT * FROM EVENT e LEFT JOIN REPEATING r ON r.id = e.FK_SERIES WHERE (e.START_DATE >= ? AND e.END_DATE <= ?) OR (r.START <= ? AND r.END >= ?)", (from_date, to_date, from_date, to_date,))
+        c.execute("SELECT * FROM EVENT e LEFT JOIN SCHEDULING r ON r.id = e.FK_SERIES WHERE (e.START_DATE >= ? AND e.END_DATE <= ?) OR (r.START <= ? AND r.END >= ?)", (from_date, to_date, from_date, to_date,))
 
         eventList = []
         for result in c.fetchall():
             event = EventType.convert(result)
             if event._series is not None:
-                nextEvent = Repeating.getNextDate(event)
+                nextEvent = Scheduling.getNextDate(event)
                 while nextEvent is not None and to_date >= nextEvent._end:
                     eventList.append(nextEvent)
-                    nextEvent = Repeating.getNextDate(nextEvent)
+                    nextEvent = Scheduling.getNextDate(nextEvent)
             else:
                 eventList.append(event)
 
@@ -122,7 +122,7 @@ class Event(object):
         c = conn.cursor()
         try:
             # c.execute("CREATE TABLE EVENT(ID INTEGER PRIMARY KEY autoincrement,DESCRIPTION INTEGER,START_DATE TEXT,END_DATE TEXT,PRIVATE INTEGER,FK_CREATOR INTEGER,FK_TYPE INTEGER,FK_SERIES INTEGER)")
-            c.execute("CREATE TABLE `EVENT` (`ID`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,`DESCRIPTION`	TEXT,`START_DATE`	TEXT,`END_DATE`	TEXT,`PRIVATE`	INTEGER,`FK_CREATOR`	INTEGER,`FK_TYPE`	INTEGER,`FK_SERIES`	INTEGER,FOREIGN KEY(`PRIVATE`) REFERENCES PRIVACY(ID),FOREIGN KEY(`FK_TYPE`) REFERENCES TYPES(ID),FOREIGN KEY(`FK_SERIES`) REFERENCES REPEATING(ID))")
+            c.execute("CREATE TABLE `EVENT` (`ID`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,`DESCRIPTION`	TEXT,`START_DATE`	TEXT,`END_DATE`	TEXT,`PRIVATE`	INTEGER,`FK_CREATOR`	INTEGER,`FK_TYPE`	INTEGER,`FK_SERIES`	INTEGER,FOREIGN KEY(`PRIVATE`) REFERENCES PRIVACY(ID),FOREIGN KEY(`FK_TYPE`) REFERENCES TYPES(ID),FOREIGN KEY(`FK_SERIES`) REFERENCES SCHEDULING(ID))")
         except sqlite3.OperationalError as err:
             print("CREATE TABLE WARNING: {0}".format(err))
 
@@ -396,7 +396,7 @@ class Privacy(object):
         return "States: %s" % (self.levels)
 
 
-class Repeating(object):
+class Scheduling(object):
 
     def __init__(self, id, start, end, interval):
         self._id = id
@@ -407,15 +407,15 @@ class Repeating(object):
     @staticmethod
     def findById(id):
         c = conn.cursor()
-        c.execute("SELECT * FROM REPEATING WHERE ID = ?", (id,))
-        return Repeating.fromResultToObject(c.fetchone())
+        c.execute("SELECT * FROM SCHEDULING WHERE ID = ?", (id,))
+        return Scheduling.fromResultToObject(c.fetchone())
 
     @staticmethod
-    def createRepeatingTable():
+    def createSchedulingTable():
         c = conn.cursor()
 
         try:
-            c.execute("CREATE TABLE REPEATING(ID INTEGER PRIMARY KEY autoincrement, START DATE, END DATE, INTERVAL TEXT);")
+            c.execute("CREATE TABLE SCHEDULING(ID INTEGER PRIMARY KEY autoincrement, START DATE, END DATE, INTERVAL TEXT);")
         except sqlite3.OperationalError as err:
             print("CREATE TABLE WARNING: {0}".format(err))
 
@@ -423,20 +423,20 @@ class Repeating(object):
 
     def create(self):
         c = conn.cursor()
-        c.execute("INSERT INTO REPEATING VALUES(?, ?, ?, ?)", (self._id, self._start, self._end, self._interval,))
+        c.execute("INSERT INTO SCHEDULING VALUES(?, ?, ?, ?)", (self._id, self._start, self._end, self._interval,))
         conn.commit()
 
     def update(self):
         c = conn.cursor()
-        c.execute("UPDATE REPEATING SET START = ?, END = ?, INTERVAL = ? WHERE ID = ?", (self._start,self._end, self._interval, self._id))
+        c.execute("UPDATE SCHEDULING SET START = ?, END = ?, INTERVAL = ? WHERE ID = ?", (self._start,self._end, self._interval, self._id))
         conn.commit()
 
     @staticmethod
-    def dropRepeatingTable():
+    def dropSchedulingTable():
         c = conn.cursor()
 
         try:
-            c.execute("DROP TABLE REPEATING")
+            c.execute("DROP TABLE SCHEDULING")
         except sqlite3.OperationalError as err:
             print("DROP TABLE WARNING: {0}".format(err))
 
@@ -447,17 +447,17 @@ class Repeating(object):
         newEvent = copy.deepcopy(event)
 
         cur = conn.cursor()
-        cur.execute("SELECT * FROM REPEATING WHERE ID = ?", (newEvent._series,))
+        cur.execute("SELECT * FROM SCHEDULING WHERE ID = ?", (newEvent._series,))
 
         result = cur.fetchone()
 
         if result is None:
             return None
 
-        repeat = Repeating.fromResultToObject(result)
+        repeat = Scheduling.fromResultToObject(result)
 
-        newStart = Repeating.addIntervalToDate(newEvent._start, repeat._interval)
-        newEnd = Repeating.addIntervalToDate(newEvent._end, repeat._interval)
+        newStart = Scheduling.addIntervalToDate(newEvent._start, repeat._interval)
+        newEnd = Scheduling.addIntervalToDate(newEvent._end, repeat._interval)
 
         if newStart >= repeat._start and newEnd <= repeat._end:
             newEvent._start = newStart
@@ -483,7 +483,7 @@ class Repeating(object):
         dates = []
 
         for x in range(0, count):
-            dates.append(Repeating.getNextDate(event))
+            dates.append(Scheduling.getNextDate(event))
 
         return dates
 
@@ -499,7 +499,7 @@ class Repeating(object):
         if result[2] is not None:
             end = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S")
 
-        return Repeating(result[0], start, end, result[3])
+        return Scheduling(result[0], start, end, result[3])
 
 class DBUtil():
     result = None
