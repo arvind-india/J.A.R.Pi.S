@@ -99,8 +99,8 @@ class Event(object):
             if event._series is not None:
                 nextEvent = Repeating.getNextDate(event)
                 while nextEvent is not None and to_date >= nextEvent._end:
-                    eventList.append(copy.copy(nextEvent))
-                    nextEvent = Repeating.getNextDate(event)
+                    eventList.append(nextEvent)
+                    nextEvent = Repeating.getNextDate(nextEvent)
             else:
                 eventList.append(event)
 
@@ -444,22 +444,28 @@ class Repeating(object):
 
     @staticmethod
     def getNextDate(event):
+        newEvent = copy.deepcopy(event)
+
         cur = conn.cursor()
-        cur.execute("SELECT * FROM REPEATING WHERE ID = ?", (event._series,))
+        cur.execute("SELECT * FROM REPEATING WHERE ID = ?", (newEvent._series,))
 
         result = cur.fetchone()
+
+        if result is None:
+            return None
+
         repeat = Repeating.fromResultToObject(result)
 
-        newStart = Repeating.addIntervalToDate(event._start, repeat._interval)
-        newEnd = Repeating.addIntervalToDate(event._end, repeat._interval)
+        newStart = Repeating.addIntervalToDate(newEvent._start, repeat._interval)
+        newEnd = Repeating.addIntervalToDate(newEvent._end, repeat._interval)
 
         if newStart >= repeat._start and newEnd <= repeat._end:
-            event._start = newStart
-            event._end = newEnd
+            newEvent._start = newStart
+            newEvent._end = newEnd
         else:
             return None
 
-        return event
+        return newEvent
 
     @staticmethod
     def addIntervalToDate(date, interval):
@@ -477,8 +483,7 @@ class Repeating(object):
         dates = []
 
         for x in range(0, count):
-            nextEvent = copy.copy(Repeating.getNextDate(event))
-            dates.append(nextEvent)
+            dates.append(Repeating.getNextDate(event))
 
         return dates
 
