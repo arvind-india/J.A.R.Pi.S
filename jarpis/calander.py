@@ -15,7 +15,7 @@ class Calendar(object):
             self.to_date = to_date
 
     def getEvents(self):
-        list = Event.findEventsByDate(self.from_date, self.to_date)
+        list = Event.findByDate(self.from_date, self.to_date)
         return list
 
     def __repr__(self):

@@ -1,15 +1,18 @@
 import sqlite3
+import datetime
+from dateutil.relativedelta import relativedelta
+import copy
 
 conn = None
+
 
 class Event(object):
     def __init__(self, id, description, start, end, private, creator, type, series):
         self._id = id
         self._description = description
-        self._start = start
-        self._end = end
+        self._start = start.replace(microsecond=0)
+        self._end = end.replace(microsecond=0)
 
-## WTF VALIDATION STARTS: im open for smarter solutions... ##
         if private is None:
             self._private = Privacy.getLevelsIdByName("public")
         elif isinstance(private, int):
@@ -24,7 +27,6 @@ class Event(object):
                 self._private = id
             else:
                 raise TypeError("Give privacy level is not valid: %s" % (private))
-## WTF VALIDATION ENDS ##
 
         self._creator = creator
 
@@ -37,14 +39,28 @@ class Event(object):
 
     @staticmethod
     def fromResultToObject(result):
-        return Event(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7])
+        start = None
+        end = None
+
+        if result[2] is not None:
+            start = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S")
+
+        if result[3] is not None:
+            end = datetime.datetime.strptime(result[3], "%Y-%m-%d %H:%M:%S")
+
+        return Event(result[0], result[1], start, end, result[4], result[5], result[6], result[7])
 
     def create(self):
         c = conn.cursor()
-        c.execute(
-            "INSERT INTO EVENT (ID, DESCRIPTION, START_DATE, END_DATE, PRIVATE, FK_CREATOR, FK_TYPE, FK_SERIES) VALUES(?,?,?,?,?,?,?,?)",
-            (self._id, self._description, self._start, self._end, self._private, self._creator, self._type,
-             self._series))
+
+        try:
+            c.execute(
+                "INSERT INTO EVENT (ID, DESCRIPTION, START_DATE, END_DATE, PRIVATE, FK_CREATOR, FK_TYPE, FK_SERIES) VALUES(?,?,?,?,?,?,?,?)",
+                (self._id, self._description, self._start, self._end, self._private, self._creator, self._type,
+                 self._series))
+        except sqlite3.IntegrityError as err:
+            print("Error while inserting Event with ID {1}: {0}".format(err, self._id))
+
         conn.commit()
         return self
 
@@ -55,11 +71,14 @@ class Event(object):
         return True
 
     def update(self):
-        return "Event updated!"
+        c=conn.cursor()
+        c.execute("UPDATE EVENT SET DESCRIPTION=?, START_DATE=?, END_DATE=?, PRIVATE=?, FK_CREATOR=?, FK_TYPE=?, FK_SERIES=? WHERE ID = ?", (self._description, self._start, self._end, self._private, self._creator, self._type,
+             self._series,self._id))
+        conn.commit()
+        return self
 
-    #TODO Move this to Calendar Class
     @staticmethod
-    def findOneById(id):
+    def findById(id):
         c = conn.cursor()
         c.execute("SELECT * FROM EVENT WHERE ID = ?", (id,))
         result = c.fetchone()
@@ -69,19 +88,24 @@ class Event(object):
 
         raise EventNotFoundException("No Event found with given ID: %s" % (id))
 
-    #TODO Move this to Calendar Class
     @staticmethod
-    def findEventsByDate(from_date, to_date):
+    def findByDate(from_date, to_date):
         c = conn.cursor()
-        c.execute("SELECT * FROM EVENT WHERE start_date > ? AND end_date < ?", (from_date, to_date,))
+        c.execute("SELECT * FROM EVENT e LEFT JOIN SCHEDULING r ON r.id = e.FK_SERIES WHERE (e.START_DATE >= ? AND e.END_DATE <= ?) OR (r.START <= ? AND r.END >= ?)", (from_date, to_date, from_date, to_date,))
 
         eventList = []
         for result in c.fetchall():
-            eventList.append(EventType.convert(result))
+            event = EventType.convert(result)
+            if event._series is not None:
+                nextEvent = Scheduling.getNextDate(event)
+                while nextEvent is not None and to_date >= nextEvent._end:
+                    eventList.append(nextEvent)
+                    nextEvent = Scheduling.getNextDate(nextEvent)
+            else:
+                eventList.append(event)
 
         return eventList
 
-    # TODO Move this to Calendar Class
     @staticmethod
     def findAll():
         c = conn.cursor()
@@ -97,9 +121,10 @@ class Event(object):
     def createEventTable():
         c = conn.cursor()
         try:
-            c.execute("CREATE TABLE EVENT(ID INTEGER PRIMARY KEY autoincrement,DESCRIPTION INTEGER,START_DATE TEXT,END_DATE TEXT,PRIVATE INTEGER,FK_CREATOR INTEGER,FK_TYPE INTEGER,FK_SERIES INTEGER)")
+            # c.execute("CREATE TABLE EVENT(ID INTEGER PRIMARY KEY autoincrement,DESCRIPTION INTEGER,START_DATE TEXT,END_DATE TEXT,PRIVATE INTEGER,FK_CREATOR INTEGER,FK_TYPE INTEGER,FK_SERIES INTEGER)")
+            c.execute("CREATE TABLE `EVENT` (`ID`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,`DESCRIPTION`	TEXT,`START_DATE`	TEXT,`END_DATE`	TEXT,`PRIVATE`	INTEGER,`FK_CREATOR`	INTEGER,`FK_TYPE`	INTEGER,`FK_SERIES`	INTEGER,FOREIGN KEY(`PRIVATE`) REFERENCES PRIVACY(ID),FOREIGN KEY(`FK_TYPE`) REFERENCES TYPES(ID),FOREIGN KEY(`FK_SERIES`) REFERENCES SCHEDULING(ID))")
         except sqlite3.OperationalError as err:
-            print("CREATE TBALE WARNING: {0}".format(err))
+            print("CREATE TABLE WARNING: {0}".format(err))
 
         conn.commit()
 
@@ -109,7 +134,7 @@ class Event(object):
         try:
             c.execute("DROP TABLE EVENT")
         except sqlite3.OperationalError as err:
-            print("DROP TBALE WARNING: {0}".format(err))
+            print("DROP TABLE WARNING: {0}".format(err))
         conn.commit()
 
     def __repr__(self, *args, **kwargs):
@@ -126,7 +151,17 @@ class Birthday(Event):
     def fromResultToObject(result):
         identity = result[0]
         params = EventParameter.loadParameterById(identity)
-        event = Birthday(result[0], result[1], result[2], result[3], result[4], result[5], result[7], params)
+
+        start = None
+        end = None
+
+        if result[2] is not None:
+            start = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S")
+
+        if result[3] is not None:
+            end = datetime.datetime.strptime(result[3], "%Y-%m-%d %H:%M:%S")
+
+        event = Birthday(result[0], result[1], start, end, result[4], result[5], result[7], params)
         return event
 
     def create(self):
@@ -141,6 +176,9 @@ class Birthday(Event):
 
         conn.commit()
         return self
+
+    def update(self):
+        super(Birthday, self).update()
 
     def delete(self):
         super(Birthday, self).delete()
@@ -164,7 +202,17 @@ class Shopping(Event):
     def fromResultToObject(result):
         identity = result[0]
         params = EventParameter.loadParameterById(identity)
-        event = Shopping(result[0], result[1], result[2], result[3], result[4], result[5], result[7], params)
+
+        start = None
+        end = None
+
+        if result[2] is not None:
+            start = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S")
+
+        if result[3] is not None:
+            end = datetime.datetime.strptime(result[3], "%Y-%m-%d %H:%M:%S")
+
+        event = Shopping(result[0], result[1], start, end, result[4], result[5], result[7], params)
         return event
 
     def create(self):
@@ -180,10 +228,12 @@ class Shopping(Event):
         conn.commit()
         return self
 
+    def update(self):
+        super(Shopping, self).update()
+
     def delete(self):
         super(Shopping, self).delete()
         c = conn.cursor()
-        #TODO: ADD CASCADE ON DELETE FOR TABLE
         c.execute("DELETE FROM EVENT_PARAMETER WHERE FK_EVENT = ?", (self._id,))
         conn.commit()
         return True
@@ -217,9 +267,9 @@ class EventParameter(object):
     def createEventParameterTable():
         c = conn.cursor()
         try:
-            c.execute("CREATE TABLE EVENT_PARAMETER(ID INTEGER PRIMARY KEY autoincrement,FK_EVENT INTEGER, KEY TEXT,VALUE TEXT)")
+            c.execute("CREATE TABLE `EVENT_PARAMETER` (`ID`	INTEGER PRIMARY KEY AUTOINCREMENT,`FK_EVENT`	INTEGER,`KEY`	TEXT,`VALUE`	TEXT,FOREIGN KEY(`FK_EVENT`) REFERENCES EVENT(ID));")
         except sqlite3.OperationalError as err:
-            print("CREATE TBALE WARNING: {0}".format(err))
+            print("CREATE TABLE WARNING: {0}".format(err))
 
         conn.commit()
 
@@ -229,7 +279,7 @@ class EventParameter(object):
         try:
             c.execute("DROP TABLE EVENT_PARAMETER")
         except sqlite3.OperationalError as err:
-            print("DROP TBALE WARNING: {0}".format(err))
+            print("DROP TABLE WARNING: {0}".format(err))
         conn.commit()
 
 class EventNotFoundException(Exception):
@@ -274,7 +324,7 @@ class EventType(object):
         try:
             c.execute("CREATE TABLE EVENT_TYPE(ID INTEGER PRIMARY KEY autoincrement, DEFINITION TEXT);")
         except sqlite3.OperationalError as err:
-            print("CREATE TBALE WARNING: {0}".format(err))
+            print("CREATE TABLE WARNING: {0}".format(err))
 
         for key in EventType.types:
             c.execute("INSERT INTO EVENT_TYPE VALUES(?,?)", (key, EventType.types[key]))
@@ -288,12 +338,13 @@ class EventType(object):
         try:
             c.execute("DROP TABLE EVENT_TYPE")
         except sqlite3.OperationalError as err:
-            print("DROP TBALE WARNING: {0}".format(err))
+            print("DROP TABLE WARNING: {0}".format(err))
 
         conn.commit()
 
     def __repr__(self):
         return "Event Types: %s" % (self.types)
+
 
 class Privacy(object):
     def __init__(self):
@@ -323,7 +374,7 @@ class Privacy(object):
         try:
             c.execute("CREATE TABLE PRIVACY(ID INTEGER PRIMARY KEY autoincrement, LEVEL TEXT);")
         except sqlite3.OperationalError as err:
-            print("CREATE TBALE WARNING: {0}".format(err))
+            print("CREATE TABLE WARNING: {0}".format(err))
 
         for key in Privacy.levels:
             c.execute("INSERT INTO PRIVACY VALUES(?,?)", (key, Privacy.levels[key]))
@@ -337,7 +388,7 @@ class Privacy(object):
         try:
             c.execute("DROP TABLE PRIVACY")
         except sqlite3.OperationalError as err:
-            print("DROP TBALE WARNING: {0}".format(err))
+            print("DROP TABLE WARNING: {0}".format(err))
 
         conn.commit()
 
@@ -345,26 +396,121 @@ class Privacy(object):
         return "States: %s" % (self.levels)
 
 
+class Scheduling(object):
+
+    def __init__(self, id, start, end, interval):
+        self._id = id
+        self._start = start
+        self._end = end
+        self._interval = interval
+
+    @staticmethod
+    def findById(id):
+        c = conn.cursor()
+        c.execute("SELECT * FROM SCHEDULING WHERE ID = ?", (id,))
+        return Scheduling.fromResultToObject(c.fetchone())
+
+    @staticmethod
+    def createSchedulingTable():
+        c = conn.cursor()
+
+        try:
+            c.execute("CREATE TABLE SCHEDULING(ID INTEGER PRIMARY KEY autoincrement, START DATE, END DATE, INTERVAL TEXT);")
+        except sqlite3.OperationalError as err:
+            print("CREATE TABLE WARNING: {0}".format(err))
+
+        conn.commit()
+
+    def create(self):
+        c = conn.cursor()
+        c.execute("INSERT INTO SCHEDULING VALUES(?, ?, ?, ?)", (self._id, self._start, self._end, self._interval,))
+        conn.commit()
+
+    def update(self):
+        c = conn.cursor()
+        c.execute("UPDATE SCHEDULING SET START = ?, END = ?, INTERVAL = ? WHERE ID = ?", (self._start,self._end, self._interval, self._id))
+        conn.commit()
+
+    @staticmethod
+    def dropSchedulingTable():
+        c = conn.cursor()
+
+        try:
+            c.execute("DROP TABLE SCHEDULING")
+        except sqlite3.OperationalError as err:
+            print("DROP TABLE WARNING: {0}".format(err))
+
+        conn.commit()
+
+    @staticmethod
+    def getNextDate(event):
+        newEvent = copy.deepcopy(event)
+
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM SCHEDULING WHERE ID = ?", (newEvent._series,))
+
+        result = cur.fetchone()
+
+        if result is None:
+            return None
+
+        schedule = Scheduling.fromResultToObject(result)
+
+        newStart = Scheduling.addIntervalToDate(newEvent._start, schedule._interval)
+        newEnd = Scheduling.addIntervalToDate(newEvent._end, schedule._interval)
+
+        if newStart >= schedule._start and newEnd <= schedule._end:
+            newEvent._start = newStart
+            newEvent._end = newEnd
+        else:
+            return None
+
+        return newEvent
+
+    @staticmethod
+    def addIntervalToDate(date, interval):
+        if interval == "daily":
+            return date + relativedelta(days=1)
+        elif interval == "weekly":
+            return date + relativedelta(weeks=1)
+        elif interval == "monthly":
+            return date + relativedelta(months=1)
+        elif interval == "yearly":
+            return date + relativedelta(years=1)
+
+    @staticmethod
+    def getNextDates(event, count):
+        dates = []
+
+        for x in range(0, count):
+            dates.append(Scheduling.getNextDate(event))
+
+        return dates
+
+    @staticmethod
+    def fromResultToObject(result):
+
+        start = None
+        end = None
+
+        if result[1] is not None:
+            start = datetime.datetime.strptime(result[1], "%Y-%m-%d %H:%M:%S")
+
+        if result[2] is not None:
+            end = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S")
+
+        return Scheduling(result[0], start, end, result[3])
+
 class DBUtil():
     result = None
 
     @staticmethod
-    def execute(function, params):
+    def execute(function, params, production=None):
         global conn
-        conn = sqlite3.connect("develop.db")
-        result = function(*params)
-        conn.close()
+        if production is None:
+            production = "test.db"
 
-        return result
-
-
-class TestDBUtil():
-    result = None
-
-    @staticmethod
-    def execute(function, params):
-        global conn
-        conn = sqlite3.connect("test.db")
+        conn = sqlite3.connect(production)
         result = function(*params)
         conn.close()
 
