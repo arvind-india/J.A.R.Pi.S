@@ -4,7 +4,8 @@ conn = None
 
 
 class User(object):
-    def __init__(self, name):
+    def __init__(self, id, name):
+        self._id = id
         self._name = name
 
     @staticmethod
@@ -31,13 +32,46 @@ class User(object):
 
         conn.commit()
 
-    def insert(self):
+    def insertUser(self):
         c = conn.cursor()
         c.execute(
             "INSERT INTO USER(USERNAME) VALUES (?)", (self._name,)
         )
         conn.commit()
         return self
+
+    def updateUser(self, name):
+        c = conn.cursor()
+        c.execute(
+            "UPDATE USER SET USERNAME=? WHERE ID=?", (name, self._id)
+        )
+        conn.commit()
+        return self
+
+    @staticmethod
+    def getUserByID(id):
+        c = conn.cursor()
+        c.execute(
+            "SELECT * FROM USER WHERE ID=?", (id,)
+        )
+        result = c.fetchone()
+
+        if result is not None:
+            return User(result[0], result[1])
+
+        raise UserNotFoundException("No User with given ID: %d" %id)
+
+    def deleteUser(self):
+        c = conn.cursor()
+        c.execute(
+            "DELETE FROM USER WHERE ID=?", (self._id,)
+        )
+        conn.commit()
+        return True
+
+
+class UserNotFoundException(Exception):
+    pass
 
 
 class DBUtil():
