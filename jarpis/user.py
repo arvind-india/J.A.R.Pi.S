@@ -4,16 +4,18 @@ conn = None
 
 
 class User(object):
-    def __init__(self, id, name):
+    def __init__(self, id, name, speakerID):
         self._id = id
         self._name = name
+        self._speakerID = speakerID
 
     @staticmethod
     def createUserTable():
         c = conn.cursor()
         try:
             c.execute(
-                "CREATE TABLE `USER` ( `ID` INTEGER PRIMARY KEY AUTOINCREMENT, `USERNAME` INTEGER )"
+                "CREATE TABLE `USER` ( `ID` INTEGER PRIMARY KEY AUTOINCREMENT, `USERNAME` TEXT, "
+                "`SPEAKERID` INTEGER UNIQUE )"
             )
         except sqlite3.OperationalError as error:
             print("CREATE TABLE WARNING: {0}").format(error)
@@ -35,7 +37,7 @@ class User(object):
     def insertUser(self):
         c = conn.cursor()
         c.execute(
-            "INSERT INTO USER(USERNAME) VALUES (?)", (self._name,)
+            "INSERT INTO USER(USERNAME, SPEAKERID) VALUES (?, ?)", (self._name, self._speakerID,)
         )
         conn.commit()
         return self
@@ -57,7 +59,7 @@ class User(object):
         result = c.fetchone()
 
         if result is not None:
-            return User(result[0], result[1])
+            return User(result[0], result[1], result[2])
 
         raise UserNotFoundException("No User with given ID: %d" %id)
 
