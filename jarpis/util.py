@@ -16,3 +16,5 @@ class DateUtil(object):
 
     def getDate(self):
         return datetime.today().replace(microsecond=0)
+
+    #TODO Maybe we can add a check if the time from the system equals the time from web...
