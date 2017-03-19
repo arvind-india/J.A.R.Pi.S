@@ -139,22 +139,23 @@ class Event(object):
         return eventList
 
     @staticmethod
-    def findByUser(user, from_date = None, to_date = None):
+    def findByUser(user, date = None):
         connection = sqlite3.connect(jarpis.database)
         c = connection.cursor()
 
-        if from_date is None and to_date is None:
-            from_date = datetime.datetime.now()
-            to_date = datetime.datetime(from_date.year, from_date.month, from_date.day, 23, 59)
+        if date is None:
+            date = datetime.datetime.now().replace(microsecond=0)
 
-        c.execute("SELECT * FROM EVENT WHERE FK_CREATOR = ? AND START_DATE > ? AND END_DATE < ?", (user, from_date, to_date))
-        print("%s %s" % (from_date, to_date))
+        to_date = datetime.datetime(date.year, date.month, date.day, 23, 59)
+
+        c.execute("SELECT * FROM EVENT WHERE FK_CREATOR = ? AND START_DATE >= ? AND END_DATE <= ?", (user._id, date, to_date,))
+        list = c.fetchall()
+        connection.close()
 
         eventList = []
-        for result in c.fetchall():
+        for result in list:
             eventList.append(EventType.convert(result))
 
-        connection.close()
         return eventList
 
     @staticmethod

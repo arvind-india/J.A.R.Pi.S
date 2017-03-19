@@ -140,11 +140,30 @@ class EventTest(unittest.TestCase):
 
     def test_find_upcoming_events_by_user(self):
         level = "private"
-        user = User(1, "Dieter", 1)
-        event = Event(-1000, "Tolles Event", datetime.datetime(2017, 3, 15, 9, 30), datetime.datetime(2017, 3, 15, 10, 0), level, user._id, level, None)
 
-        user.insertUser()
-        event.create()
+        user = User(1, "Dieter", 1).insertUser()
+        user2 = User(2, "Maxi", 2).insertUser()
+
+        Event(-1001, "Tolles Event1", datetime.datetime(2017, 3, 19, 6,0), datetime.datetime(2017, 3, 19, 8,0), level, user._id, None, None).create()
+        Event(-1002, "Tolles Event2", datetime.datetime(2017, 3, 19, 15,0), datetime.datetime(2017, 3, 19, 17,0), level, user._id, None, None).create()
+
+        from_date = datetime.datetime.now().replace(microsecond=0) + datetime.timedelta(minutes=10)
+        to_date = datetime.datetime.now().replace(microsecond=0) + datetime.timedelta(minutes=20)
+        Event(-1003, "Tolles Event3", from_date, to_date, level, user._id, None, None).create()
+
+        Event(-1004, "Tolles Event4", datetime.datetime(2017, 3, 19, 6,0), datetime.datetime(2017, 3, 19, 8,0), level, user2._id, None, None).create()
+        Event(-1005, "Tolles Event5", from_date, to_date, level, user2._id, None, None).create()
+
+        eventList1User1 = Event.findByUser(user, datetime.datetime(2017, 3, 19))
+        eventList2User1 = Event.findByUser(user)
+        eventList1User2 = Event.findByUser(user2, datetime.datetime(2017, 3, 19))
+        eventList2User2 = Event.findByUser(user2)
+
+        self.assertEqual(len(eventList1User1), 3)
+        self.assertEqual(len(eventList2User1), 1)
+        self.assertEqual(len(eventList1User2), 2)
+        self.assertEqual(len(eventList2User2), 1)
+
 
     def tearDown(self):
         Event.dropEventTable()
