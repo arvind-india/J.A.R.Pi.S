@@ -6,13 +6,13 @@ from jarpis.event import *
 class PrivacyTest(unittest.TestCase):
 
     def setUp(self):
-        DBUtil.execute(Privacy.createPrivacyTable, [])
+        Privacy.createPrivacyTable()
 
     def test_get_state_id_by_name(self):
-        self.assertEqual(DBUtil.execute(Privacy.getLevelsIdByName, ["public"]), 1)
+        self.assertEqual(Privacy.getLevelsIdByName("public"), 1)
 
     def test_get_state_name_by_id(self):
-        self.assertEqual(DBUtil.execute(Privacy.getLevelsNameById, [1]), "public")
+        self.assertEqual(Privacy.getLevelsNameById(1), "public")
 
     def tearDown(self):
-        DBUtil.execute(Privacy.dropPrivacyTable, [])
+        Privacy.dropPrivacyTable()

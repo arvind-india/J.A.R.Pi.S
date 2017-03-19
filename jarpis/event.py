@@ -2,8 +2,7 @@ import sqlite3
 import datetime
 from dateutil.relativedelta import relativedelta
 import copy
-
-conn = None
+import jarpis
 
 
 class Event(object):
@@ -51,37 +50,51 @@ class Event(object):
         return Event(result[0], result[1], start, end, result[4], result[5], result[6], result[7])
 
     def create(self):
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
 
         try:
             c.execute(
                 "INSERT INTO EVENT (ID, DESCRIPTION, START_DATE, END_DATE, PRIVATE, FK_CREATOR, FK_TYPE, FK_SERIES) VALUES(?,?,?,?,?,?,?,?)",
                 (self._id, self._description, self._start, self._end, self._private, self._creator, self._type,
                  self._series))
+
+            self._id = c.lastrowid
+
         except sqlite3.IntegrityError as err:
             print("Error while inserting Event with ID {1}: {0}".format(err, self._id))
 
-        conn.commit()
+        connection.commit()
+        connection.close()
+
         return self
 
     def delete(self):
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
         c.execute("DELETE FROM EVENT WHERE ID = ?", (self._id,))
-        conn.commit()
+        connection.commit()
+        connection.close()
         return True
 
     def update(self):
-        c=conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
         c.execute("UPDATE EVENT SET DESCRIPTION=?, START_DATE=?, END_DATE=?, PRIVATE=?, FK_CREATOR=?, FK_TYPE=?, FK_SERIES=? WHERE ID = ?", (self._description, self._start, self._end, self._private, self._creator, self._type,
              self._series,self._id))
-        conn.commit()
+        connection.commit()
+        connection.close()
         return self
 
     @staticmethod
     def findById(id):
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
+
         c.execute("SELECT * FROM EVENT WHERE ID = ?", (id,))
+
         result = c.fetchone()
+        connection.close()
 
         if result is not None:
             return EventType.convert(result)
@@ -90,7 +103,9 @@ class Event(object):
 
     @staticmethod
     def findByDate(from_date, to_date):
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
+
         c.execute("SELECT * FROM EVENT e LEFT JOIN SCHEDULING r ON r.id = e.FK_SERIES WHERE (e.START_DATE >= ? AND e.END_DATE <= ?) OR (r.START <= ? AND r.END >= ?)", (from_date, to_date, from_date, to_date,))
 
         eventList = []
@@ -104,37 +119,69 @@ class Event(object):
             else:
                 eventList.append(event)
 
+        connection.close()
+
         return eventList
 
     @staticmethod
     def findAll():
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
+
         c.execute("SELECT * FROM EVENT")
 
         eventList = []
         for result in c.fetchall():
             eventList.append(EventType.convert(result))
 
+        connection.close()
+
+        return eventList
+
+    @staticmethod
+    def findByUser(user, from_date = None, to_date = None):
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
+
+        if from_date is None and to_date is None:
+            from_date = datetime.datetime.now()
+            to_date = datetime.datetime(from_date.year, from_date.month, from_date.day, 23, 59)
+
+        c.execute("SELECT * FROM EVENT WHERE FK_CREATOR = ? AND START_DATE > ? AND END_DATE < ?", (user, from_date, to_date))
+        print("%s %s" % (from_date, to_date))
+
+        eventList = []
+        for result in c.fetchall():
+            eventList.append(EventType.convert(result))
+
+        connection.close()
         return eventList
 
     @staticmethod
     def createEventTable():
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
+
         try:
             c.execute("CREATE TABLE `EVENT` (`ID`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,`DESCRIPTION`	TEXT,`START_DATE`	TEXT,`END_DATE`	TEXT,`PRIVATE`	INTEGER,`FK_CREATOR`	INTEGER,`FK_TYPE`	INTEGER,`FK_SERIES`	INTEGER,FOREIGN KEY(`PRIVATE`) REFERENCES PRIVACY(ID),FOREIGN KEY(`FK_TYPE`) REFERENCES TYPES(ID),FOREIGN KEY(`FK_SERIES`) REFERENCES SCHEDULING(ID))")
         except sqlite3.OperationalError as err:
             print("CREATE TABLE WARNING: {0}".format(err))
 
-        conn.commit()
+        connection.commit()
+        connection.close()
 
     @staticmethod
     def dropEventTable():
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
+
         try:
             c.execute("DROP TABLE EVENT")
         except sqlite3.OperationalError as err:
             print("DROP TABLE WARNING: {0}".format(err))
-        conn.commit()
+
+        connection.commit()
+        connection.close()
 
     def __repr__(self, *args, **kwargs):
         return "ID=%s, Description=%s, START=%s, END=%s, PRIVATE=%s, CREATOR=%s, TYPE=%s, SERIES=%s" % (
@@ -142,8 +189,9 @@ class Event(object):
 
 
 class Birthday(Event):
-    def __init__(self, id, description, start, end, private, creator, series, params = {}):
+    def __init__(self, id, description, start, end, private, creator, series, params):
         Event.__init__(self, id, description, start, end, private, creator, EventType.getTypeIdByName("birthday"), series)
+
         self._params = params
 
     @staticmethod
@@ -164,16 +212,11 @@ class Birthday(Event):
         return event
 
     def create(self):
-        super(Birthday, self).create()
-
-        c = conn.cursor()
-        c.execute("SELECT last_insert_rowid()")
-        result = c.fetchone()
+        event = super(Birthday, self).create()
 
         for paramKey in self._params:
-            EventParameter.insert(result[0], paramKey, self._params[paramKey])
+            EventParameter.insert(event._id, paramKey, self._params[paramKey])
 
-        conn.commit()
         return self
 
     def update(self):
@@ -181,10 +224,13 @@ class Birthday(Event):
 
     def delete(self):
         super(Birthday, self).delete()
-        c = conn.cursor()
-        #TODO: Find out if sqlite supports delete cascade
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
+
         c.execute("DELETE FROM EVENT_PARAMETER WHERE FK_EVENT = ?", (self._id,))
-        conn.commit()
+
+        connection.commit()
+        connection.close()
         return True
 
     def __repr__(self, *args, **kwargs):
@@ -200,6 +246,7 @@ class Shopping(Event):
     @staticmethod
     def fromResultToObject(result):
         identity = result[0]
+
         params = EventParameter.loadParameterById(identity)
 
         start = None
@@ -215,16 +262,11 @@ class Shopping(Event):
         return event
 
     def create(self):
-        super(Shopping, self).create()
-
-        c = conn.cursor()
-        c.execute("SELECT last_insert_rowid()")
-        result = c.fetchone()
+        event = super(Shopping, self).create()
 
         for idx, item in enumerate(self._params):
-            EventParameter.insert(result[0], "shopping_item"+str(idx), item)
+            EventParameter.insert(event._id, "shopping_item"+str(idx), item)
 
-        conn.commit()
         return self
 
     def update(self):
@@ -232,9 +274,13 @@ class Shopping(Event):
 
     def delete(self):
         super(Shopping, self).delete()
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
+
         c.execute("DELETE FROM EVENT_PARAMETER WHERE FK_EVENT = ?", (self._id,))
-        conn.commit()
+        connection.commit()
+        connection.close()
+
         return True
 
     def __repr__(self, *args, **kwargs):
@@ -243,46 +289,65 @@ class Shopping(Event):
 
 
 class EventParameter(object):
+
     @staticmethod
     def loadParameterById(id):
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
+
         c.execute("SELECT * FROM EVENT_PARAMETER WHERE FK_EVENT = ?", (id,))
+        results = c.fetchall()
 
         params = {}
-        for obj in c.fetchall():
+        for obj in results:
+
             key = obj[2]
             val = obj[3]
             params[key] = val
+
+        connection.close()
 
         return params
 
     @staticmethod
     def insert(eventId, key, value):
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
+
         c.execute("INSERT INTO EVENT_PARAMETER VALUES(null, ?, ?, ?)",(eventId, key, value,))
-        conn.commit()
+
+        connection.commit()
+        connection.close()
 
     @staticmethod
     def createEventParameterTable():
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
         try:
             c.execute("CREATE TABLE `EVENT_PARAMETER` (`ID`	INTEGER PRIMARY KEY AUTOINCREMENT,`FK_EVENT`	INTEGER,`KEY`	TEXT,`VALUE`	TEXT,FOREIGN KEY(`FK_EVENT`) REFERENCES EVENT(ID));")
         except sqlite3.OperationalError as err:
             print("CREATE TABLE WARNING: {0}".format(err))
 
-        conn.commit()
+        connection.commit()
+        connection.close()
 
     @staticmethod
     def dropEventParameterTable():
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
+
         try:
             c.execute("DROP TABLE EVENT_PARAMETER")
         except sqlite3.OperationalError as err:
             print("DROP TABLE WARNING: {0}".format(err))
-        conn.commit()
+
+        connection.commit()
+        connection.close()
+
 
 class EventNotFoundException(Exception):
     pass
+
 
 class EventType(object):
     def __init__(self):
@@ -318,7 +383,8 @@ class EventType(object):
 
     @staticmethod
     def createEventTypeTable():
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
 
         try:
             c.execute("CREATE TABLE EVENT_TYPE(ID INTEGER PRIMARY KEY autoincrement, DEFINITION TEXT);")
@@ -328,18 +394,21 @@ class EventType(object):
         for key in EventType.types:
             c.execute("INSERT INTO EVENT_TYPE VALUES(?,?)", (key, EventType.types[key]))
 
-        conn.commit()
+        connection.commit()
+        connection.close()
 
     @staticmethod
     def dropEventTypeTable():
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
 
         try:
             c.execute("DROP TABLE EVENT_TYPE")
         except sqlite3.OperationalError as err:
             print("DROP TABLE WARNING: {0}".format(err))
 
-        conn.commit()
+        connection.commit()
+        connection.close()
 
     def __repr__(self):
         return "Event Types: %s" % (self.types)
@@ -368,7 +437,8 @@ class Privacy(object):
 
     @staticmethod
     def createPrivacyTable():
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
 
         try:
             c.execute("CREATE TABLE PRIVACY(ID INTEGER PRIMARY KEY autoincrement, LEVEL TEXT);")
@@ -378,18 +448,21 @@ class Privacy(object):
         for key in Privacy.levels:
             c.execute("INSERT INTO PRIVACY VALUES(?,?)", (key, Privacy.levels[key]))
 
-        conn.commit()
+        connection.commit()
+        connection.close()
 
     @staticmethod
     def dropPrivacyTable():
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
 
         try:
             c.execute("DROP TABLE PRIVACY")
         except sqlite3.OperationalError as err:
             print("DROP TABLE WARNING: {0}".format(err))
 
-        conn.commit()
+        connection.commit()
+        connection.close()
 
     def __repr__(self):
         return "States: %s" % (self.levels)
@@ -405,50 +478,68 @@ class Scheduling(object):
 
     @staticmethod
     def findById(id):
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
+
         c.execute("SELECT * FROM SCHEDULING WHERE ID = ?", (id,))
-        return Scheduling.fromResultToObject(c.fetchone())
+        result = c.fetchone()
+
+        connection.close()
+
+        return Scheduling.fromResultToObject(result)
 
     @staticmethod
     def createSchedulingTable():
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
 
         try:
             c.execute("CREATE TABLE SCHEDULING(ID INTEGER PRIMARY KEY autoincrement, START DATE, END DATE, INTERVAL TEXT);")
         except sqlite3.OperationalError as err:
             print("CREATE TABLE WARNING: {0}".format(err))
 
-        conn.commit()
+        connection.commit()
+        connection.close()
 
     def create(self):
-        c = conn.cursor()
-        c.execute("INSERT INTO SCHEDULING VALUES(?, ?, ?, ?)", (self._id, self._start, self._end, self._interval,))
-        conn.commit()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
 
-    def update(self):
-        c = conn.cursor()
+        c.execute("INSERT INTO SCHEDULING VALUES(?, ?, ?, ?)", (self._id, self._start, self._end, self._interval,))
+
+        connection.commit()
+        connection.close()
+
+    def update(self, ):
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
         c.execute("UPDATE SCHEDULING SET START = ?, END = ?, INTERVAL = ? WHERE ID = ?", (self._start,self._end, self._interval, self._id))
-        conn.commit()
+        connection.commit()
+        connection.close()
 
     @staticmethod
     def dropSchedulingTable():
-        c = conn.cursor()
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
 
         try:
             c.execute("DROP TABLE SCHEDULING")
         except sqlite3.OperationalError as err:
             print("DROP TABLE WARNING: {0}".format(err))
 
-        conn.commit()
+        connection.commit()
+        connection.close()
 
     @staticmethod
     def getNextDate(event):
         newEvent = copy.deepcopy(event)
 
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM SCHEDULING WHERE ID = ?", (newEvent._series,))
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
 
-        result = cur.fetchone()
+        c.execute("SELECT * FROM SCHEDULING WHERE ID = ?", (newEvent._series,))
+
+        result = c.fetchone()
 
         if result is None:
             return None
@@ -463,6 +554,8 @@ class Scheduling(object):
             newEvent._end = newEnd
         else:
             return None
+
+        connection.close()
 
         return newEvent
 
@@ -499,18 +592,3 @@ class Scheduling(object):
             end = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S")
 
         return Scheduling(result[0], start, end, result[3])
-
-class DBUtil():
-    result = None
-
-    @staticmethod
-    def execute(function, params, production=None):
-        global conn
-        if production is None:
-            production = "test.db"
-
-        conn = sqlite3.connect(production)
-        result = function(*params)
-        conn.close()
-
-        return result
