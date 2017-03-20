@@ -22,6 +22,7 @@ class User(object):
         except sqlite3.OperationalError as error:
             print("CREATE TABLE WARNING: {0}").format(error)
 
+        connection.commit()
         connection.close()
 
     @staticmethod
