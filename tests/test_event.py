@@ -159,9 +159,9 @@ class EventTest(unittest.TestCase):
         eventList1User2 = Event.findByUser(user2, datetime.datetime(2017, 3, 19))
         eventList2User2 = Event.findByUser(user2)
 
-        self.assertEqual(len(eventList1User1), 3)
+        self.assertEqual(len(eventList1User1), 2)
         self.assertEqual(len(eventList2User1), 1)
-        self.assertEqual(len(eventList1User2), 2)
+        self.assertEqual(len(eventList1User2), 1)
         self.assertEqual(len(eventList2User2), 1)
 
 
