@@ -1,0 +1,4 @@
+# Directory for the audiofiles, in which the manual training searches for new files as well as
+# the speaker recognition.
+*
+!.gitignore

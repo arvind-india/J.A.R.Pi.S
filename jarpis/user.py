@@ -14,8 +14,9 @@ class User(object):
         c = conn.cursor()
         try:
             c.execute(
-                "CREATE TABLE `USER` ( `ID` INTEGER PRIMARY KEY AUTOINCREMENT, `USERNAME` TEXT, "
-                "`SPEAKERID` INTEGER UNIQUE )"
+                "CREATE TABLE `USER` ( `ID` INTEGER, `USERNAME` TEXT, "
+                "`SPEAKERID` INTEGER, PRIMARY KEY(`ID`, `USERNAME`, `SPEAKERID`))"
+
             )
         except sqlite3.OperationalError as error:
             print("CREATE TABLE WARNING: {0}").format(error)
@@ -37,7 +38,7 @@ class User(object):
     def insertUser(self):
         c = conn.cursor()
         c.execute(
-            "INSERT INTO USER(USERNAME, SPEAKERID) VALUES (?, ?)", (self._name, self._speakerID,)
+            "INSERT INTO USER(ID, USERNAME, SPEAKERID) VALUES (?, ?, ?)", (self._id, self._name, self._speakerID,)
         )
         conn.commit()
         return self

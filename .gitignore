@@ -141,3 +141,4 @@ fabric.properties
 .vscode/
 develop.db
 test.db
+/jarpis/recognition/recordings/*.wav
