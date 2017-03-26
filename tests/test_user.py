@@ -39,5 +39,23 @@ class UserTest(unittest.TestCase):
         with self.assertRaises(UserNotFoundException):
             User.getUserByID(1)
 
+    def test_get_User_from_Speaker(self):
+        user = User(1, "Lausen", 1)
+        user.insertUser()
+        speaker = ("Lausen", 1)
+
+        result = User.getUserFromSpeaker(speaker)
+        self.assertEqual(result.id, 1)
+        self.assertEqual(result.name, "Lausen")
+        self.assertEqual(result.speakerID, 1)
+
+    def test_speaker_has_no_user(self):
+        user = User(1, "Lausen", 1)
+        user.insertUser()
+        speaker = ("Sperber", 0)
+
+        with self.assertRaises(UserNotFoundException):
+            User.getUserFromSpeaker(speaker)
+
     def tearDown(self):
         User.dropUserTable()
