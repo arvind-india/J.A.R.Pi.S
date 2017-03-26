@@ -1,13 +1,20 @@
 language: python
 python:
     - "2.7"
-install: make init
-script: make test
+install:
+    - git clone https://www.github.com/Adirockzz95/Piwho.git
+    - cd Piwho
+    - python setup.py install
+    - cd ..
+    - pip install -r requirements.txt
+script:
+    - py.test --ignore=Piwho/
 git:
     depth: 3
 branches:
     only:
     - master
     - develop
+    - fix_piwho_for_travis
 notifications:
     slack: studiarbeit-jarpis:1hZhWcJYccrmsc3UtS7J07aE
