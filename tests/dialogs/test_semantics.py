@@ -35,8 +35,10 @@ class The_interpreter_can_instantiate_a_semantic_object(unittest.TestCase):
             # assertions
             self.assertIn("language", semantic_object.slots)
             self.assertIn("adjective", semantic_object.slots)
-            self.assertEqual(semantic_object.slots["language"].value, "Python")
-            self.assertEqual(semantic_object.slots["adjective"].value, "cool")
+            self.assertEqual(semantic_object.slots[
+                             "language"].utterance, "Python")
+            self.assertEqual(semantic_object.slots[
+                             "adjective"].utterance, "cool")
 
         handlerMock = Mock(wraps=handler)
 

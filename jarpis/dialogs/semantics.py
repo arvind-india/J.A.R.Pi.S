@@ -60,7 +60,7 @@ class SemanticFrame:
         for name, slot in self._slots.iteritems():
             parsed_value = parse_results[name]
             if parsed_value is not None:
-                slot.value = parsed_value
+                slot.utterance = parsed_value
 
         return self
 
@@ -74,13 +74,10 @@ class Slot:
         self._type = type
         self._name = name
         self._value = None
+        self._utterance = None
 
     def __repr__(self):
         return "name=%s, type=%s, value=%s" % (self.name, self.type, self.value)
-
-    @property
-    def value(self):
-        return self._value
 
     @property
     def name(self):
@@ -89,6 +86,19 @@ class Slot:
     @property
     def type(self):
         return self._type
+
+    @property
+    def utterance(self):
+        return self._utterance
+
+    @utterance.setter
+    def utterance(self, value):
+        if value is not None:
+            self._utterance = value
+
+    @property
+    def value(self):
+        return self._value
 
     @value.setter
     def value(self, value):
