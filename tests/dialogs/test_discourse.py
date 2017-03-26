@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import unittest
 from jarpis.dialogs.dialog import DiscourseUnit, DiscourseTree
-from jarpis.dialogs.semantics import SemanticClass
+from jarpis.dialogs.semantics import SemanticFrame
 
 
 class A_semantic_object_can_be_correctly_inserted_into_a_discourse_tree(unittest.TestCase):
@@ -13,7 +13,7 @@ class A_semantic_object_can_be_correctly_inserted_into_a_discourse_tree(unittest
         root_children = [DiscourseUnit(None, "InappropriateType2", leaf_nodes)]
         root = DiscourseUnit(None, "AppropriateType", root_children)
         discourse_tree = DiscourseTree(root)
-        object_to_insert = SemanticClass(None, "AppropriateType", "test")
+        object_to_insert = SemanticFrame(None, "AppropriateType", "test")
 
         target_unit = root
 
@@ -32,7 +32,7 @@ class A_semantic_object_can_be_correctly_inserted_into_a_discourse_tree(unittest
         root_children = [DiscourseUnit(None, "AppropriateType", leaf_nodes)]
         root = DiscourseUnit(None, "InappropriateType2", root_children)
         discourse_tree = DiscourseTree(root)
-        object_to_insert = SemanticClass(None, "AppropriateType", "test")
+        object_to_insert = SemanticFrame(None, "AppropriateType", "test")
 
         target_unit = root_children[0]
 
@@ -51,7 +51,7 @@ class A_semantic_object_can_be_correctly_inserted_into_a_discourse_tree(unittest
         root_children = [DiscourseUnit(None, "InappropriateType1", leaf_nodes)]
         root = DiscourseUnit(None, "InappropriateType2", root_children)
         discourse_tree = DiscourseTree(root)
-        object_to_insert = SemanticClass(None, "AppropriateType", "test")
+        object_to_insert = SemanticFrame(None, "AppropriateType", "test")
 
         target_unit = leaf_nodes[0]
 

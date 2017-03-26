@@ -29,7 +29,7 @@ class SemanticInterpreter:
         communication.publish("interpretationFinished")
 
 
-class SemanticClass:
+class SemanticFrame:
 
     def __init__(self, grammar, type, semantic_class, slots=None):
         if slots is None:
@@ -65,7 +65,7 @@ class SemanticClass:
         return self
 
     def bind(self, slots):
-        return SemanticClass(self.grammar, self.entity_type, self.entity_type, slots)
+        return SemanticFrame(self.grammar, self.entity_type, self.entity_type, slots)
 
 
 class Slot:
