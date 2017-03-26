@@ -11,7 +11,7 @@ class DiscourseAnalysis:
 
     def _register_events(self):
         jarpis.dialogs.communication.register(
-            "evaluationRequest", self._evalute)
+            "evaluationRequest", self._evaluate)
 
     def _evaluate(self, semantic_object):
         entity_type = semantic_object.entity_type
