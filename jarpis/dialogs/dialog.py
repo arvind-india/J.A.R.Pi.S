@@ -13,7 +13,7 @@ class DialogManager:
     def _register_events(self):
         # semantic interpreter events
         jarpis.dialogs.communication.register(
-            "interpretationSuccessfull", self._insert_into_discourse_trees)
+            "interpretationSuccessful", self._insert_into_discourse_trees)
         jarpis.dialogs.communication.register(
             "nothingToInterpret", self._nothing_to_interpret)
         jarpis.dialogs.communication.register(
@@ -21,7 +21,7 @@ class DialogManager:
 
         # discourse analysis events
         jarpis.dialogs.communication.register(
-            "evaluationSuccessfull", self._semantic_object_evaluated)
+            "evaluationSuccessful", self._semantic_object_evaluated)
         jarpis.dialogs.communication.register(
             "evaluationFailed", self._semantic_object_evaluation_failed)
         jarpis.dialogs.communication.register(

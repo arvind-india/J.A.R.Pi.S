@@ -21,7 +21,7 @@ class SemanticInterpreter:
             tree, result = parser.parse(utterance)
             if tree is not None:
                 communication.publish(
-                    "interpretationSuccessfull",
+                    "interpretationSuccessful",
                     semantic_class.fill_slots(result))
 
         # TODO Do we need to explicitly publish an event if no semantic object could be parsed?
