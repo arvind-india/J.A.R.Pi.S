@@ -1,1 +1,2 @@
-audiofile_path = '/home/pi/jarpis/jarpis/recognition/recordings/'
+from pathlib import Path
+audiofile_path = str(Path("recordings").resolve()) + "/"

@@ -17,11 +17,5 @@ def get_current_speaker():
                 return speaker
             else:
                 return None
-    except IOError:
-        raise
-
-user = get_current_speaker()
-print(user)
-
-
-
+    except IOError as err:
+        print("IOError: {0}").format(err)
