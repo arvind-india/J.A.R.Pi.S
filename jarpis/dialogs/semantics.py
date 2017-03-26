@@ -64,9 +64,6 @@ class SemanticFrame:
 
         return self
 
-    def bind(self, slots):
-        return SemanticFrame(self.grammar, self.entity_type, self.entity_type, slots)
-
 
 class Slot:
 
@@ -104,3 +101,13 @@ class Slot:
     def value(self, value):
         if value is not None:
             self._value = value
+
+
+class SemanticUserFrame(SemanticFrame):
+
+    @classmethod
+    def bind(cls, frame, user):
+        slots = frame.slots.copy()
+        slots["name"].value = user.name
+
+        return cls(frame.grammar, frame.entity_type, "User", slots)

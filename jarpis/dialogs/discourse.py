@@ -1,7 +1,7 @@
 import jarpis.dialogs
-from jarpis.user import User, UserNotFoundException
-from jarpis.dialogs.semantics import SemanticClass
 import jarpis.recognition.speakerRecognition as speakerRecognition
+from jarpis.user import User, UserNotFoundException
+from jarpis.dialogs.semantics import SemanticUserFrame
 
 
 class DiscourseAnalysis:
@@ -36,8 +36,6 @@ class DiscourseAnalysis:
                 communication.publish("invalidInformation", semantic_object)
                 return
 
-            # TODO either fill a dict or have SemanticClass subclass for each
-            # entity
-            bound_object = semantic_object.bind({})
+            bound_object = SemanticUserFrame.bind(semantic_object, user)
             bound_object.entity = user
             communication.publish("evaluationSuccessful", bound_object)
