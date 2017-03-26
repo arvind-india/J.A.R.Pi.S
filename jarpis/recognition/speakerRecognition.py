@@ -16,7 +16,7 @@ def get_current_speaker():
             if speaker[1] == name:
                 return speaker
             else:
-                return ("anonymus", None)
+                return ("anonymous", None)
     except IOError as err:
         print("IOError: {0}").format(err)
 
