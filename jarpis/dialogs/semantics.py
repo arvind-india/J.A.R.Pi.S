@@ -31,12 +31,13 @@ class SemanticInterpreter:
 
 class SemanticClass:
 
-    def __init__(self, grammar, type, slots=None):
+    def __init__(self, grammar, type, semantic_class, slots=None):
         if slots is None:
             slots = {}
 
         self._grammar = grammar
         self._type = type
+        self._class = semantic_class
         self._slots = slots
 
     @property
@@ -46,6 +47,10 @@ class SemanticClass:
     @property
     def grammar(self):
         return self._grammar
+
+    @property
+    def semantic_class(self):
+        return self._class
 
     @property
     def slots(self):

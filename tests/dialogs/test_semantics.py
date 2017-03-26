@@ -27,7 +27,7 @@ class The_interpreter_can_instantiate_a_semantic_object(unittest.TestCase):
         # arrange
         slots = {"language": Slot(None, "language"),
                  "adjective": Slot(None, "adjective")}
-        semantic_class = SemanticClass(self._grammar, "test", slots)
+        semantic_class = SemanticClass(self._grammar, "test", "test", slots)
         interpreter = SemanticInterpreter([semantic_class])
         utterance = "Python is cool"
 
@@ -71,7 +71,7 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
         # arrange
         slots = {"language": Slot(None, "language"),
                  "adjective": Slot(None, "adjective")}
-        semantic_class = SemanticClass(self._grammar, "test", slots)
+        semantic_class = SemanticClass(self._grammar, "test", "test", slots)
         interpreter = SemanticInterpreter([semantic_class])
         utterance = "Dodo ist ein Chefkoch"
         interpretationSuccessfull = Mock()
@@ -92,7 +92,7 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
         # arrange
         slots = {"language": Slot(None, "language"),
                  "adjective": Slot(None, "adjective")}
-        semantic_class = SemanticClass(self._grammar, "test", slots)
+        semantic_class = SemanticClass(self._grammar, "test", "test", slots)
         interpreter = SemanticInterpreter([semantic_class])
         utterance = ""
         handler = Mock()
@@ -108,7 +108,7 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
         # arrange
         slots = {"language": Slot(None, "language"),
                  "adjective": Slot(None, "adjective")}
-        semantic_class = SemanticClass(self._grammar, "test", slots)
+        semantic_class = SemanticClass(self._grammar, "test", "test", slots)
         interpreter = SemanticInterpreter([semantic_class])
         utterance = None
         handler = Mock()
