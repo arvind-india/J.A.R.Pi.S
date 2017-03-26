@@ -64,6 +64,9 @@ class SemanticClass:
 
         return self
 
+    def bind(self, slots):
+        return SemanticClass(self.grammar, self.entity_type, self.entity_type, slots)
+
 
 class Slot:
 
