@@ -84,18 +84,12 @@ Event = {
     "responses": {}
 }
 
-EventByName = {
-    "entityType": "Event",
-    "slots": {
-        "name": EventName
-    },
-    "responses": {}
-}
-
 EventByDate = {
     "entityType": "Event",
     "slots": {
-        "period": Period
+        "period": Period,
+        "user": User,
+        "Visibility": Visibility
     },
     "responses": {}
 }
