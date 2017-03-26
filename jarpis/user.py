@@ -29,8 +29,9 @@ class User(object):
 
         try:
             c.execute(
-                "CREATE TABLE `USER` ( `ID` INTEGER PRIMARY KEY AUTOINCREMENT, `USERNAME` TEXT, "
-                "`SPEAKERID` INTEGER UNIQUE )"
+                "CREATE TABLE `User`(`ID`INTEGER PRIMARY KEY AUTOINCREMENT,	`USERNAME`TEXT NOT NULL,"
+                "`SPEAKERID`INTEGER, UNIQUE(USERNAME, SPEAKERID));"
+
             )
         except sqlite3.OperationalError as error:
             print("CREATE TABLE WARNING: {0}").format(error)
