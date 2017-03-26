@@ -14,6 +14,7 @@ Period = {
 }
 
 Username = {}
+Reference = {}
 
 User = {
     "entityType": "User",
@@ -21,6 +22,13 @@ User = {
         "name": Username
     },
     "responses": {}
+}
+
+UserByReference = {
+    "entityType": "User",
+    "slots": {
+        "reference": Reference
+    }
 }
 
 Scheduling = {
