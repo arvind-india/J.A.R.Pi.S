@@ -53,38 +53,6 @@ class SemanticFrame:
         return self._class
 
     @property
-    def slots(self):
-        return self._slots
-
-    def fill_slots(self, parse_results):
-        for name, slot in self._slots.iteritems():
-            parsed_value = parse_results[name]
-            if parsed_value is not None:
-                slot.utterance = parsed_value
-
-        return self
-
-
-class Slot:
-
-    def __init__(self, type, name):
-        self._type = type
-        self._name = name
-        self._value = None
-        self._utterance = None
-
-    def __repr__(self):
-        return "name=%s, type=%s, value=%s" % (self.name, self.type, self.value)
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def type(self):
-        return self._type
-
-    @property
     def utterance(self):
         return self._utterance
 
@@ -102,6 +70,56 @@ class Slot:
         if value is not None:
             self._value = value
 
+    @property
+    def slots(self):
+        return self._slots
+
+    def fill_slots(self, parse_results):
+        for name, slot in self._slots.iteritems():
+            parsed_value = parse_results[name]
+            if parsed_value is not None:
+                slot.semantic_frame.utterance = parsed_value
+
+        return self
+
+
+class Slot:
+
+    def __init__(self, type, name, semantic_frame):
+        self._type = type
+        self._name = name
+        self.semantic_frame = semantic_frame
+
+    def __repr__(self):
+        return ("name=%s, type=%s, value=%s" %
+                (self.name, self.type, self.semantic_frame))
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def type(self):
+        return self._type
+
+    # @property
+    # def utterance(self):
+    #     return self._utterance
+
+    # @utterance.setter
+    # def utterance(self, value):
+    #     if value is not None:
+    #         self._utterance = value
+
+    # @property
+    # def value(self):
+    #     return self._value
+
+    # @value.setter
+    # def value(self, value):
+    #     if value is not None:
+    #         self._value = value
+
 
 class SemanticUserFrame(SemanticFrame):
 
@@ -111,3 +129,9 @@ class SemanticUserFrame(SemanticFrame):
         slots["name"].value = user.name
 
         return cls(frame.grammar, frame.entity_type, "User", slots)
+
+
+class SemanticDateFrame(SemanticFrame):
+
+    def bind(cls, frame, date):
+        slots = {}
