@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import unittest
-from jarpis.calander import *
+from jarpis.calendar import *
 
 
 class CalendarTest(unittest.TestCase):
@@ -35,16 +35,19 @@ class CalendarTest(unittest.TestCase):
         cal = Calendar(self.currentTime - datetime.timedelta(seconds=1), None)
         self.assertEqual(len(cal.getEvents()), 5)
 
-
     def test_find_series_events(self):
-        event1 = Event(-1010, "Alte Party", datetime.datetime(2017,1,10,10,0), datetime.datetime(2017,1,10,11,0), 1, 1, 1, 1)
-        event2 = Event(-1011, "Neue Party", datetime.datetime(2017,1,12,10,0), datetime.datetime(2017,1,12,11,0), 1, 1, 1, None)
-        series = Scheduling(1, datetime.datetime(2017,1,10,10,0), datetime.datetime(2017,1,15,11,0), "daily")
+        event1 = Event(-1010, "Alte Party", datetime.datetime(2017, 1,
+                                                              10, 10, 0), datetime.datetime(2017, 1, 10, 11, 0), 1, 1, 1, 1)
+        event2 = Event(-1011, "Neue Party", datetime.datetime(2017, 1, 12,
+                                                              10, 0), datetime.datetime(2017, 1, 12, 11, 0), 1, 1, 1, None)
+        series = Scheduling(1, datetime.datetime(
+            2017, 1, 10, 10, 0), datetime.datetime(2017, 1, 15, 11, 0), "daily")
         event1.create()
         event2.create()
         series.create()
 
-        list = Event.findByDate(datetime.datetime(2017, 1, 9, 11, 0), datetime.datetime(2017, 1, 13, 10, 0))
+        list = Event.findByDate(datetime.datetime(
+            2017, 1, 9, 11, 0), datetime.datetime(2017, 1, 13, 10, 0))
         self.assertEqual(len(list), 3)
 
     def tearDown(self):
