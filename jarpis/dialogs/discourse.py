@@ -49,7 +49,7 @@ class DiscourseAnalysis:
         communication = jarpis.dialogs.communication
         semantic_class = semantic_object.semantic_class
         if semantic_class == "DateByReference":
-            reference = semantic_object.utterance
+            reference = semantic_object.slots["reference"].utterance
             possible_references = {
                 "yesterday": -1,
                 "today": 0,
