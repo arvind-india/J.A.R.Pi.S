@@ -3,6 +3,7 @@ from jarpis.event import *
 
 
 class Calendar(object):
+
     def __init__(self, from_date, to_date):
         if from_date is None:
             self.from_date = datetime.datetime.now()
@@ -17,6 +18,21 @@ class Calendar(object):
     def getEvents(self):
         list = Event.findByDate(self.from_date, self.to_date)
         return list
+
+    def getCurrentYear(self):
+        return datetime.today().year
+
+    def getCurrentWeekday(self):
+        return datetime.today().strftime("%A")
+
+    def getCurrentMonth(self):
+        return datetime.today().month
+
+    def getCurrentDate(self):
+        return datetime.today().replace(microsecond=0)
+
+    def getCurrentDay(self):
+        return datetime.today().day
 
     def __repr__(self):
         return "Calendar from %s to %s" % (self.from_date, self.to_date)
