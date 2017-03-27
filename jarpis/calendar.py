@@ -21,27 +21,29 @@ class Calendar(object):
 
     @staticmethod
     def getCurrentYear():
-        return datetime.today().year
+        return datetime.datetime.today().year
 
     @staticmethod
     def getCurrentWeekday():
-        return datetime.today().strftime("%A")
+        return datetime.datetime.today().strftime("%A")
 
     @staticmethod
     def getCurrentMonth():
-        return datetime.today().month
+        return datetime.datetime.today().month
 
     @staticmethod
     def getCurrentDate():
-        return Calendar.getDateByOffset(datetime.today().replace(microsecond=0))
+        return Calendar.getDateByOffset(datetime.datetime.today().replace(microsecond=0))
 
     @staticmethod
     def getDateByOffset(date=None, offset=0):
+        if date is None:
+            date = datetime.datetime.today()
         return date + datetime.timedelta(days=offset)
 
     @staticmethod
     def getCurrentDay():
-        return datetime.today().day
+        return datetime.datetime.today().day
 
     def __repr__(self):
         return "Calendar from %s to %s" % (self.from_date, self.to_date)

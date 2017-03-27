@@ -1,6 +1,26 @@
 EventName = {}
 EventType = {}
-Date = {}
+
+DateReference = {}
+Date = {
+}
+
+DateByReference = {
+    "entityType": "Date",
+    "slots": {
+        "reference": DateReference
+    },
+    "responses": {}
+}
+
+Days = {}
+DateByDays = {
+    "entityType": "Date",
+    "slots": {
+        "days": Days
+    },
+    "responses": {}
+}
 
 Period = {
     "entityType": None,
