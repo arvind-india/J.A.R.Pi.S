@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import unittest
 from mock import Mock
 from parsetron import Grammar, Set
-import jarpis.dialogs
+from jarpis.dialogs.events import EventMediator
 from jarpis.dialogs.semantics import SemanticInterpreter, SemanticFrame, Slot
 
 
@@ -17,7 +17,7 @@ class The_interpreter_can_instantiate_a_semantic_object(unittest.TestCase):
             GOAL = utterance
 
         self._grammar = TestGrammar()
-        self._communication = jarpis.dialogs.communication
+        self._communication = EventMediator()
 
     def tearDown(self):
         del self._grammar
@@ -28,7 +28,8 @@ class The_interpreter_can_instantiate_a_semantic_object(unittest.TestCase):
         slots = {"language": Slot(None, "language", SemanticFrame(None, None, None)),
                  "adjective": Slot(None, "adjective", SemanticFrame(None, None, None))}
         semantic_class = SemanticFrame(self._grammar, "test", "test", slots)
-        interpreter = SemanticInterpreter([semantic_class])
+        interpreter = SemanticInterpreter(
+            self._communication, [semantic_class])
         utterance = "Python is cool"
 
         def handler(semantic_object):
@@ -63,7 +64,7 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
             GOAL = utterance
 
         self._grammar = TestGrammar()
-        self._communication = jarpis.dialogs.communication
+        self._communication = EventMediator()
 
     def tearDown(self):
         del self._grammar
@@ -74,12 +75,13 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
         slots = {"language": Slot(None, "language", SemanticFrame(None, None, None)),
                  "adjective": Slot(None, "adjective", SemanticFrame(None, None, None))}
         semantic_class = SemanticFrame(self._grammar, "test", "test", slots)
-        interpreter = SemanticInterpreter([semantic_class])
+        interpreter = SemanticInterpreter(
+            self._communication, [semantic_class])
         utterance = "Dodo ist ein Chefkoch"
         interpretationSuccessfull = Mock()
         interpretationFinished = Mock()
         self._communication.register(
-            "interpretationSuccessfull", interpretationSuccessfull)
+            "interpretationSuccessful", interpretationSuccessfull)
         self._communication.register(
             "interpretationFinished", interpretationFinished)
 
@@ -95,7 +97,8 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
         slots = {"language": Slot(None, "language", SemanticFrame(None, None, None)),
                  "adjective": Slot(None, "adjective", SemanticFrame(None, None, None))}
         semantic_class = SemanticFrame(self._grammar, "test", "test", slots)
-        interpreter = SemanticInterpreter([semantic_class])
+        interpreter = SemanticInterpreter(
+            self._communication, [semantic_class])
         utterance = ""
         handler = Mock()
         self._communication.register("nothingToInterpret", handler)
@@ -111,7 +114,8 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
         slots = {"language": Slot(None, "language", SemanticFrame(None, None, None)),
                  "adjective": Slot(None, "adjective", SemanticFrame(None, None, None))}
         semantic_class = SemanticFrame(self._grammar, "test", "test", slots)
-        interpreter = SemanticInterpreter([semantic_class])
+        interpreter = SemanticInterpreter(
+            self._communication, [semantic_class])
         utterance = None
         handler = Mock()
         self._communication.register("nothingToInterpret", handler)
