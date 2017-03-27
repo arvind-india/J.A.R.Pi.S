@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 import unittest
-from jarpis.calendar import *
+import datetime
+from jarpis.calendar import Calendar
+from jarpis.event import Event, Scheduling
 
 
 class CalendarTest(unittest.TestCase):

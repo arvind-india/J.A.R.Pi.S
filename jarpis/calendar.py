@@ -1,5 +1,5 @@
 import datetime
-from jarpis.event import *
+from jarpis.event import Event
 
 
 class Calendar(object):
@@ -29,7 +29,10 @@ class Calendar(object):
         return datetime.today().month
 
     def getCurrentDate(self):
-        return datetime.today().replace(microsecond=0)
+        return self.getDateByOffset(datetime.today().replace(microsecond=0))
+
+    def getDateByOffset(self, date=None, offset=0):
+        return date + datetime.timedelta(days=offset)
 
     def getCurrentDay(self):
         return datetime.today().day
