@@ -25,8 +25,8 @@ class The_interpreter_can_instantiate_a_semantic_object(unittest.TestCase):
 
     def test_if_the_utterance_contains_the_necessary_keywords(self):
         # arrange
-        slots = {"language": Slot(None, "language"),
-                 "adjective": Slot(None, "adjective")}
+        slots = {"language": Slot(None, "language", SemanticFrame(None, None, None)),
+                 "adjective": Slot(None, "adjective", SemanticFrame(None, None, None))}
         semantic_class = SemanticFrame(self._grammar, "test", "test", slots)
         interpreter = SemanticInterpreter([semantic_class])
         utterance = "Python is cool"
@@ -71,8 +71,8 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
 
     def test_if_the_utterance_does_not_contain_the_necessary_keywords(self):
         # arrange
-        slots = {"language": Slot(None, "language"),
-                 "adjective": Slot(None, "adjective")}
+        slots = {"language": Slot(None, "language", SemanticFrame(None, None, None)),
+                 "adjective": Slot(None, "adjective", SemanticFrame(None, None, None))}
         semantic_class = SemanticFrame(self._grammar, "test", "test", slots)
         interpreter = SemanticInterpreter([semantic_class])
         utterance = "Dodo ist ein Chefkoch"
@@ -92,8 +92,8 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
 
     def test_if_the_utterance_is_empty(self):
         # arrange
-        slots = {"language": Slot(None, "language"),
-                 "adjective": Slot(None, "adjective")}
+        slots = {"language": Slot(None, "language", SemanticFrame(None, None, None)),
+                 "adjective": Slot(None, "adjective", SemanticFrame(None, None, None))}
         semantic_class = SemanticFrame(self._grammar, "test", "test", slots)
         interpreter = SemanticInterpreter([semantic_class])
         utterance = ""
@@ -108,8 +108,8 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
 
     def test_if_the_utterance_is_None(self):
         # arrange
-        slots = {"language": Slot(None, "language"),
-                 "adjective": Slot(None, "adjective")}
+        slots = {"language": Slot(None, "language", SemanticFrame(None, None, None)),
+                 "adjective": Slot(None, "adjective", SemanticFrame(None, None, None))}
         semantic_class = SemanticFrame(self._grammar, "test", "test", slots)
         interpreter = SemanticInterpreter([semantic_class])
         utterance = None

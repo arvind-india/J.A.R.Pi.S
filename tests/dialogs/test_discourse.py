@@ -37,9 +37,9 @@ class A_semantic_object_can_be_bound_to_a_user_entity(unittest.TestCase):
             "evaluationSuccessful", handlerMock)
 
         slots = {
-            "name": Slot("Username", "name")
+            "reference": Slot("Reference", "reference", SemanticFrame(None, "Reference", "Reference"))
         }
-        slots["name"].utterance = "me"
+        slots["reference"].semantic_frame.utterance = "me"
         semantic_object = SemanticFrame(None, "User", "UserByReference", slots)
         da = DiscourseAnalysis()
 
