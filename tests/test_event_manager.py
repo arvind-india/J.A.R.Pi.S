@@ -17,7 +17,7 @@ class BasicTestSuite(unittest.TestCase):
         em = EventManager(event)
         em.rename_event("Doofes Event")
 
-        dbEvent = Event.findById(-1000)
+        dbEvent = EventManager.findById(-1000)
         self.assertEqual(dbEvent._description, "Doofes Event")
 
     def test_move_date(self):
@@ -29,7 +29,7 @@ class BasicTestSuite(unittest.TestCase):
         new_end = du.getDate()+ du.addTime("minutes", 10)
 
         em.move_event(new_start, new_end)
-        dbEvent = Event.findById(-1000)
+        dbEvent = EventManager.findById(-1000)
         self.assertEqual(dbEvent._start, new_start)
         self.assertEqual(dbEvent._end, new_end)
 
@@ -44,7 +44,7 @@ class BasicTestSuite(unittest.TestCase):
 
         em.move_event_by_duration("hours", 2)
 
-        dbEvent = Event.findById(-1000)
+        dbEvent = EventManager.findById(-1000)
 
         self.assertEqual(dbEvent._start, new_start)
         self.assertEqual(dbEvent._end, new_end)

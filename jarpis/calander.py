@@ -1,5 +1,6 @@
 import datetime
 from jarpis.event import *
+from jarpis.event_manager import *
 
 
 class Calendar(object):
@@ -15,7 +16,7 @@ class Calendar(object):
             self.to_date = to_date
 
     def getEvents(self):
-        list = Event.findByDate(self.from_date, self.to_date)
+        list = EventManager.findByDate(self.from_date, self.to_date)
         return list
 
     def __repr__(self):

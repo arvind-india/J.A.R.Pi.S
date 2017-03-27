@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import unittest
 from jarpis.calander import *
+from jarpis.event_manager import *
 
 
 class CalendarTest(unittest.TestCase):
@@ -44,7 +45,7 @@ class CalendarTest(unittest.TestCase):
         event2.create()
         series.create()
 
-        list = Event.findByDate(datetime.datetime(2017, 1, 9, 11, 0), datetime.datetime(2017, 1, 13, 10, 0))
+        list = EventManager.findByDate(datetime.datetime(2017, 1, 9, 11, 0), datetime.datetime(2017, 1, 13, 10, 0))
         self.assertEqual(len(list), 3)
 
     def tearDown(self):
