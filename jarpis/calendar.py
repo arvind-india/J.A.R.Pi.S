@@ -19,22 +19,28 @@ class Calendar(object):
         list = Event.findByDate(self.from_date, self.to_date)
         return list
 
-    def getCurrentYear(self):
+    @staticmethod
+    def getCurrentYear():
         return datetime.today().year
 
-    def getCurrentWeekday(self):
+    @staticmethod
+    def getCurrentWeekday():
         return datetime.today().strftime("%A")
 
-    def getCurrentMonth(self):
+    @staticmethod
+    def getCurrentMonth():
         return datetime.today().month
 
-    def getCurrentDate(self):
-        return self.getDateByOffset(datetime.today().replace(microsecond=0))
+    @staticmethod
+    def getCurrentDate():
+        return Calendar.getDateByOffset(datetime.today().replace(microsecond=0))
 
-    def getDateByOffset(self, date=None, offset=0):
+    @staticmethod
+    def getDateByOffset(date=None, offset=0):
         return date + datetime.timedelta(days=offset)
 
-    def getCurrentDay(self):
+    @staticmethod
+    def getCurrentDay():
         return datetime.today().day
 
     def __repr__(self):
