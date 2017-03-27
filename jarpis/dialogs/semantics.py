@@ -102,31 +102,26 @@ class Slot:
     def type(self):
         return self._type
 
-    # @property
-    # def utterance(self):
-    #     return self._utterance
+    @property
+    def utterance(self):
+        return self.semantic_frame.utterance
 
-    # @utterance.setter
-    # def utterance(self, value):
-    #     if value is not None:
-    #         self._utterance = value
-
-    # @property
-    # def value(self):
-    #     return self._value
-
-    # @value.setter
-    # def value(self, value):
-    #     if value is not None:
-    #         self._value = value
+    @property
+    def value(self):
+        return self.semantic_frame.value
 
 
 class SemanticUserFrame(SemanticFrame):
 
     @classmethod
     def bind(cls, frame, user):
-        slots = frame.slots.copy()
-        slots["name"].value = user.name
+        if frame.entity_type == "User":
+            username_frame = SemanticFrame(None, "Username", "Username")
+            username_frame.utterance = frame.slots["reference"].utterance
+            username_frame.value = user.name
+            slots = {
+                "name": Slot("User", "name", username_frame)
+            }
 
         return cls(frame.grammar, frame.entity_type, "User", slots)
 
