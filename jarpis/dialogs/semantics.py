@@ -112,21 +112,44 @@ class Slot:
 
 
 class SemanticUserFrame(SemanticFrame):
+    entity_type = "User"
 
     @classmethod
     def bind(cls, frame, user):
-        if frame.entity_type == "User":
+        if frame.entity_type == cls.entity_type:
             username_frame = SemanticFrame(None, "Username", "Username")
             username_frame.utterance = frame.slots["reference"].utterance
             username_frame.value = user.name
             slots = {
-                "name": Slot("User", "name", username_frame)
+                "name": Slot(cls.entity_type, "name", username_frame)
             }
 
-        return cls(frame.grammar, frame.entity_type, "User", slots)
+            user_frame = cls(frame.grammar, cls.entity_type,
+                             cls.entity_type, slots)
+            user_frame.entity = user
+            return user_frame
+        else:
+            raise ValueError(("Entity type of semantic frame does not match"
+                              "expected type. (actual={0} | expected={1}").format(frame.entity_type, cls.entity_type))
 
 
 class SemanticDateFrame(SemanticFrame):
+    entity_type = "Date"
 
+    @classmethod
     def bind(cls, frame, date):
-        slots = {}
+        if frame.entity_type == cls.entity_type:
+            timestamp_frame = SemanticFrame(None, "Timestamp", "Timestamp")
+            timestamp_frame.utterance = frame.slots["reference"].utterance
+            timestamp_frame.value = date.isoformat()
+            slots = {
+                "timestamp": Slot(cls.entity_type, "timestamp", timestamp_frame)
+            }
+
+            date_frame = cls(frame.grammar, cls.entity_type,
+                             cls.entity_type, slots)
+            date_frame.entity = date
+            return date_frame
+        else:
+            raise ValueError(("Entity type of semantic frame does not match"
+                              "expected type. (actual={0} | expected={1}").format(frame.entity_type, cls.entity_type))

@@ -2,7 +2,7 @@ import jarpis.dialogs
 import jarpis.recognition.speakerRecognition as speakerRecognition
 from jarpis.user import User, UserNotFoundException
 from jarpis.calendar import Calendar
-from jarpis.dialogs.semantics import SemanticUserFrame
+from jarpis.dialogs.semantics import SemanticUserFrame, SemanticDateFrame
 
 
 class DiscourseAnalysis:
@@ -40,7 +40,6 @@ class DiscourseAnalysis:
                 return
 
             bound_object = SemanticUserFrame.bind(semantic_object, user)
-            bound_object.entity = user
             communication.publish("evaluationSuccessful", bound_object)
         else:
             raise ValueError(
@@ -64,3 +63,5 @@ class DiscourseAnalysis:
             offset_in_days = possible_references[reference]
             today = Calendar.getCurrentDate()
             target_date = Calendar.getDateByOffset(today, offset_in_days)
+            bound_object = SemanticDateFrame.bind(semantic_object, target_date)
+            communication.publish("evaluationSuccessful", bound_object)
