@@ -39,3 +39,6 @@ class DiscourseAnalysis:
             bound_object = SemanticUserFrame.bind(semantic_object, user)
             bound_object.entity = user
             communication.publish("evaluationSuccessful", bound_object)
+        else:
+            raise ValueError(
+                "Unknown semantic class '{0}'".format(semantic_class))
