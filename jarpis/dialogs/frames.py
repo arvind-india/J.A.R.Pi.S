@@ -1,10 +1,14 @@
-EventName = {}
-EventType = {}
 
-DateReference = {}
+Timestamp = {}
 Date = {
+    "entityType": "Date",
+    "slots": {
+        "timestamp": Timestamp
+    },
+    "responses": {}
 }
 
+DateReference = {}
 DateByReference = {
     "entityType": "Date",
     "slots": {
@@ -90,6 +94,8 @@ List = {
     }
 }
 
+EventName = {}
+EventType = {}
 Event = {
     "entityType": "Event",
     "slots": {
