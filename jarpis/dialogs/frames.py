@@ -40,7 +40,7 @@ DateByComponents = {
 }
 
 Period = {
-    "entityType": None,
+    "entityType": "Period",
     "slots": {
         "start": Date,
         "end": Date
