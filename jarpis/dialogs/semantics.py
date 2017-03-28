@@ -1,5 +1,4 @@
 from parsetron import RobustParser
-import jarpis.dialogs
 
 
 class SemanticInterpreter:
