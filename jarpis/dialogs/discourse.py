@@ -16,6 +16,7 @@ class DiscourseAnalysis:
 
     def _evaluate(self, semantic_object):
         entity_type = semantic_object.entity_type
+
         if entity_type == "User":
             self._bind_user(semantic_object)
         if entity_type == "Date":
@@ -63,5 +64,25 @@ class DiscourseAnalysis:
             offset_in_days = possible_references[reference]
             today = Calendar.getCurrentDate()
             target_date = Calendar.getDateByOffset(today, offset_in_days)
+            bound_object = SemanticDateFrame.bind(semantic_object, target_date)
+            communication.publish("evaluationSuccessful", bound_object)
+        elif semantic_class == "DateByDays":
+            offset_in_days = semantic_object.slots["days"].utterance
+            today = Calendar.getCurrentDate()
+            target_date = Calendar.getDateByOffset(today, offset_in_days)
+            bound_object = SemanticDateFrame.bind(semantic_object, target_date)
+            communication.publish("evaluationSuccessful", bound_object)
+        elif semantic_class == "DateByComponents":
+            day = semantic_object.slots["day"].utterance
+            month = semantic_object.slots["month"].utterance
+            year = semantic_object.slots["year"].utterance
+
+            try:
+                target_date = Calendar.getDateFor(
+                    day=day, month=month, year=year)
+            except ValueError:
+                communication.publish("invalidInformation", semantic_object)
+                return
+
             bound_object = SemanticDateFrame.bind(semantic_object, target_date)
             communication.publish("evaluationSuccessful", bound_object)
