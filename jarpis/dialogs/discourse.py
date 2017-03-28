@@ -1,4 +1,3 @@
-import jarpis.dialogs
 import jarpis.recognition.speakerRecognition as speakerRecognition
 from jarpis.user import User, UserNotFoundException
 from jarpis.calendar import Calendar
