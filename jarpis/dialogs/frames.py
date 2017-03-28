@@ -29,7 +29,7 @@ DateByDays = {
 Day = {}
 Month = {}
 Year = {}
-DateByDate = {
+DateByComponents = {
     "entityType": "Date",
     "slots": {
         "day": Day,
