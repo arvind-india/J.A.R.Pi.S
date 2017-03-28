@@ -26,6 +26,19 @@ DateByDays = {
     "responses": {}
 }
 
+Day = {}
+Month = {}
+Year = {}
+DateByDate = {
+    "entityType": "Date",
+    "slots": {
+        "day": Day,
+        "month": Month,
+        "year": Year
+    },
+    "responses": {}
+}
+
 Period = {
     "entityType": None,
     "slots": {
