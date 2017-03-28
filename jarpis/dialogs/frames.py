@@ -134,7 +134,7 @@ EventByDate = {
 }
 
 EventsByTypeQuery = {
-    "entityType": None,
+    "entityType": "Query",
     "slots": {
         "type": EventType,
         "period": Period,
@@ -143,7 +143,7 @@ EventsByTypeQuery = {
 }
 
 EventsByDateQuery = {
-    "entityType": None,
+    "entityType": "Query",
     "slots": {
         "period": Period,
         "events": [Event]
@@ -151,7 +151,7 @@ EventsByDateQuery = {
 }
 
 EventsByCreatorQuery = {
-    "entityType": None,
+    "entityType": "Query",
     "slots": {
         "creator": User,
         "period": Period,
@@ -160,7 +160,7 @@ EventsByCreatorQuery = {
 }
 
 EventsByVisibilityQuery = {
-    "entityType": None,
+    "entityType": "Query",
     "slots": {
         "visibility": Visibility,
         "creator": User,
@@ -195,7 +195,7 @@ ListByVisibility = {
 }
 
 FinishedListItemsQuery = {
-    "entityType": None,
+    "entityType": "Query",
     "slots": {
         "status": Status,
         "list": List,
