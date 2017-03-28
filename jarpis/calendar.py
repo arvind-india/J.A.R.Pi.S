@@ -45,5 +45,18 @@ class Calendar(object):
     def getCurrentDay():
         return datetime.datetime.today().day
 
+    @staticmethod
+    def getDateFor(**kwargs):
+        current = Calendar.getCurrentDate()
+
+        if "year" not in kwargs:
+            kwargs["year"] = current.year
+        if "month" not in kwargs:
+            kwargs["month"] = current.month
+        if "day" not in kwargs:
+            kwargs["day"] = current.day
+
+        return datetime.datetime(**kwargs)
+
     def __repr__(self):
         return "Calendar from %s to %s" % (self.from_date, self.to_date)
