@@ -81,6 +81,15 @@ class SemanticFrame:
 
         return self
 
+    def __getitem__(self, key):
+        return self._slots[key]
+
+    def __setitem__(self, key, value):
+        self._slots[key] = value
+
+    def __delitem__(self, key):
+        del self._slots[key]
+
 
 class Slot:
 
@@ -117,7 +126,7 @@ class SemanticUserFrame(SemanticFrame):
     def bind(cls, frame, user):
         if frame.entity_type == cls.entity_type:
             username_frame = SemanticFrame(None, "Username", "Username")
-            username_frame.utterance = frame.slots["reference"].utterance
+            username_frame.utterance = frame["reference"].utterance
             username_frame.value = user.name
             slots = {
                 "name": Slot(cls.entity_type, "name", username_frame)
@@ -139,7 +148,7 @@ class SemanticDateFrame(SemanticFrame):
     def bind(cls, frame, date):
         if frame.entity_type == cls.entity_type:
             timestamp_frame = SemanticFrame(None, "Timestamp", "Timestamp")
-            timestamp_frame.utterance = frame.slots["reference"].utterance
+            timestamp_frame.utterance = frame["reference"].utterance
             timestamp_frame.value = date.isoformat()
             slots = {
                 "timestamp": Slot(cls.entity_type, "timestamp", timestamp_frame)

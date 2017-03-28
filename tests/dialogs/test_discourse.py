@@ -29,8 +29,8 @@ class A_semantic_object_can_be_bound_to_a_user_entity(unittest.TestCase):
         def handler(semantic_object):
             # assert
             self.assertEqual(semantic_object.semantic_class, "User")
-            self.assertEqual(semantic_object.slots["name"].value, "Dodo")
-            self.assertEqual(semantic_object.slots["name"].utterance, "me")
+            self.assertEqual(semantic_object["name"].value, "Dodo")
+            self.assertEqual(semantic_object["name"].utterance, "me")
 
         handlerMock = Mock(wraps=handler)
 
@@ -42,7 +42,7 @@ class A_semantic_object_can_be_bound_to_a_user_entity(unittest.TestCase):
         }
         slots["reference"].semantic_frame.utterance = "me"
         semantic_object = SemanticFrame(None, "User", "UserByReference", slots)
-        da = DiscourseAnalysis()
+        da = DiscourseAnalysis(self._communication)
 
         # act
         da._bind_user(semantic_object)
@@ -67,9 +67,9 @@ class A_semantic_object_can_be_bound_to_a_date_entity(unittest.TestCase):
         def handler(semantic_object):
             # assert
             self.assertEqual(semantic_object.semantic_class, "Date")
-            self.assertEqual(semantic_object.slots[
+            self.assertEqual(semantic_object[
                              "timestamp"].value, mock_offset_date.return_value.isoformat())
-            self.assertEqual(semantic_object.slots[
+            self.assertEqual(semantic_object[
                              "timestamp"].utterance, "today")
 
         handlerMock = Mock(wraps=handler)
@@ -82,7 +82,7 @@ class A_semantic_object_can_be_bound_to_a_date_entity(unittest.TestCase):
         }
         slots["reference"].semantic_frame.utterance = "today"
         semantic_object = SemanticFrame(None, "Date", "DateByReference", slots)
-        da = DiscourseAnalysis()
+        da = DiscourseAnalysis(self._communication)
 
         # act
         da._bind_date(semantic_object)

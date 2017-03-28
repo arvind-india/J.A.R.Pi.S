@@ -53,7 +53,7 @@ class DiscourseAnalysis:
     def _bind_date(self, semantic_object):
         semantic_class = semantic_object.semantic_class
         if semantic_class == "DateByReference":
-            reference = semantic_object.slots["reference"].utterance
+            reference = semantic_object["reference"].utterance
             possible_references = {
                 "yesterday": -1,
                 "today": 0,
@@ -71,15 +71,15 @@ class DiscourseAnalysis:
             bound_object = SemanticDateFrame.bind(semantic_object, target_date)
             self._communication.publish("evaluationSuccessful", bound_object)
         elif semantic_class == "DateByDays":
-            offset_in_days = semantic_object.slots["days"].utterance
+            offset_in_days = semantic_object["days"].utterance
             today = Calendar.getCurrentDate()
             target_date = Calendar.getDateByOffset(today, offset_in_days)
             bound_object = SemanticDateFrame.bind(semantic_object, target_date)
             self._communication.publish("evaluationSuccessful", bound_object)
         elif semantic_class == "DateByComponents":
-            day = semantic_object.slots["day"].utterance
-            month = semantic_object.slots["month"].utterance
-            year = semantic_object.slots["year"].utterance
+            day = semantic_object["day"].utterance
+            month = semantic_object["month"].utterance
+            year = semantic_object["year"].utterance
 
             try:
                 target_date = Calendar.getDateFor(
@@ -95,8 +95,8 @@ class DiscourseAnalysis:
     def _bind_period(self, semantic_object):
         semantic_class = semantic_object.semantic_class
         if semantic_class == "Period":
-            start_date = semantic_object.slots["start"].value
-            end_date = semantic_object.slots["end"].value
+            start_date = semantic_object["start"].value
+            end_date = semantic_object["end"].value
 
             if start_date is None or end_date is None:
                 self._communication.publish(
