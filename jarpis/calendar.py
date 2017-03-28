@@ -33,10 +33,10 @@ class Calendar(object):
 
     @staticmethod
     def getCurrentDate():
-        return Calendar.getDateByOffset(datetime.datetime.today().replace(microsecond=0))
+        return datetime.datetime.today().replace(microsecond=0)
 
     @staticmethod
-    def getDateByOffset(date=None, offset=0):
+    def getDateByOffset(date, offset=0):
         if date is None:
             date = datetime.datetime.today()
         return date + datetime.timedelta(days=offset)
