@@ -24,6 +24,15 @@ class DiscourseAnalysis:
             self._bind_date(semantic_object)
         if entity_type == "Period":
             self._bind_period(semantic_object)
+        if entity_type == "Query":
+            '''
+            If I'm correct then every query can be instantly evaluated.
+            There is no binding necessary and the "events" and "items"
+            lists should be filled by the action performed afterwards by
+            the dialog manager
+            '''
+            self._communication.publish(
+                "evaluationSuccessful", semantic_object)
 
     def _bind_user(self, semantic_object):
         semantic_class = semantic_object.semantic_class
