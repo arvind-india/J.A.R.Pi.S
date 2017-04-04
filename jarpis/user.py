@@ -4,10 +4,23 @@ import jarpis
 
 
 class User(object):
+
     def __init__(self, id, name, speakerID):
         self._id = id
         self._name = name
         self._speakerID = speakerID
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def speakerID(self):
+        return self._speakerID
 
     @staticmethod
     def createUserTable():
@@ -46,7 +59,8 @@ class User(object):
         c = connection.cursor()
 
         c.execute(
-            "INSERT INTO USER(USERNAME, SPEAKERID) VALUES (?, ?)", (self._name, self._speakerID,)
+            "INSERT INTO USER(USERNAME, SPEAKERID) VALUES (?, ?)", (
+                self._name, self._speakerID,)
         )
         connection.commit()
         connection.close()
@@ -80,7 +94,28 @@ class User(object):
         if result is not None:
             return User(result[0], result[1], result[2])
 
-        raise UserNotFoundException("No User with given ID: %d" %id)
+        raise UserNotFoundException("No User with given ID: %d" % id)
+
+    @staticmethod
+    def getUserFromSpeaker(speaker):
+        connection = sqlite3.connect(jarpis.database)
+        c = connection.cursor()
+
+        name = speaker[0]
+        speaker_id = speaker[1]
+
+        c.execute(
+            "SELECT * FROM USER WHERE USERNAME=? AND SPEAKERID=?", (name,
+                                                                    speaker_id)
+        )
+        result = c.fetchone()
+        connection.close()
+
+        if result is not None:
+            return User(result[0], result[1], result[2])
+
+        raise UserNotFoundException(
+            "No User with given Name and SpeakerId: (%s,%d)" % (name, speaker_id))
 
     def deleteUser(self):
         connection = sqlite3.connect(jarpis.database)

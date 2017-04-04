@@ -1,9 +1,46 @@
-EventName = {}
-EventType = {}
-Date = {}
+
+Timestamp = {}
+Date = {
+    "entityType": "Date",
+    "slots": {
+        "timestamp": Timestamp
+    },
+    "responses": {}
+}
+
+DateReference = {}
+DateByReference = {
+    "entityType": "Date",
+    "slots": {
+        "reference": DateReference
+    },
+    "responses": {}
+}
+
+Days = {}
+DateByDays = {
+    "entityType": "Date",
+    "slots": {
+        "days": Days
+    },
+    "responses": {}
+}
+
+Day = {}
+Month = {}
+Year = {}
+DateByComponents = {
+    "entityType": "Date",
+    "slots": {
+        "day": Day,
+        "month": Month,
+        "year": Year
+    },
+    "responses": {}
+}
 
 Period = {
-    "entityType": None,
+    "entityType": "Period",
     "slots": {
         "start": Date,
         "end": Date
@@ -14,6 +51,7 @@ Period = {
 }
 
 Username = {}
+Reference = {}
 
 User = {
     "entityType": "User",
@@ -21,6 +59,13 @@ User = {
         "name": Username
     },
     "responses": {}
+}
+
+UserByReference = {
+    "entityType": "User",
+    "slots": {
+        "reference": Reference
+    }
 }
 
 Scheduling = {
@@ -62,6 +107,8 @@ List = {
     }
 }
 
+EventName = {}
+EventType = {}
 Event = {
     "entityType": "Event",
     "slots": {
@@ -76,24 +123,18 @@ Event = {
     "responses": {}
 }
 
-EventByName = {
-    "entityType": "Event",
-    "slots": {
-        "name": EventName
-    },
-    "responses": {}
-}
-
 EventByDate = {
     "entityType": "Event",
     "slots": {
-        "period": Period
+        "period": Period,
+        "user": User,
+        "Visibility": Visibility
     },
     "responses": {}
 }
 
 EventsByTypeQuery = {
-    "entityType": None,
+    "entityType": "Query",
     "slots": {
         "type": EventType,
         "period": Period,
@@ -102,7 +143,7 @@ EventsByTypeQuery = {
 }
 
 EventsByDateQuery = {
-    "entityType": None,
+    "entityType": "Query",
     "slots": {
         "period": Period,
         "events": [Event]
@@ -110,7 +151,7 @@ EventsByDateQuery = {
 }
 
 EventsByCreatorQuery = {
-    "entityType": None,
+    "entityType": "Query",
     "slots": {
         "creator": User,
         "period": Period,
@@ -119,7 +160,7 @@ EventsByCreatorQuery = {
 }
 
 EventsByVisibilityQuery = {
-    "entityType": None,
+    "entityType": "Query",
     "slots": {
         "visibility": Visibility,
         "creator": User,
@@ -154,7 +195,7 @@ ListByVisibility = {
 }
 
 FinishedListItemsQuery = {
-    "entityType": None,
+    "entityType": "Query",
     "slots": {
         "status": Status,
         "list": List,

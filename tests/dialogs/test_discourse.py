@@ -1,65 +1,88 @@
 from __future__ import absolute_import
 
 import unittest
-from jarpis.dialogs.discourse import DiscourseUnit, DiscourseTree
-from jarpis.dialogs.semantics import SemanticClass
+from datetime import datetime, timedelta
+from jarpis.user import User
+from jarpis.dialogs.events import EventMediator
+from jarpis.dialogs.semantics import SemanticFrame, Slot
+from jarpis.dialogs.discourse import DiscourseAnalysis
+from mock import Mock, patch
 
 
-class A_semantic_object_can_be_correctly_inserted_into_a_discourse_tree(unittest.TestCase):
+class A_semantic_object_can_be_bound_to_a_user_entity(unittest.TestCase):
 
-    def test_if_the_appropriate_discourse_unit_is_the_tree_root(self):
+    def setUp(self):
+        self._communication = EventMediator()
+
+    def tearDown(self):
+        del self._communication
+
+    @patch("jarpis.user.User.getUserFromSpeaker")
+    @patch("jarpis.recognition.speakerRecognition.get_current_speaker")
+    def test_if_the_current_speaker_exists_as_user(self, mock_get_current_speaker, mock_getUserFromSpeaker):
         # arrange
-        leaf_nodes = [DiscourseUnit(None, "InappropriateType1")]
-        root_children = [DiscourseUnit(None, "InappropriateType2", leaf_nodes)]
-        root = DiscourseUnit(None, "AppropriateType", root_children)
-        discourse_tree = DiscourseTree(root)
-        object_to_insert = SemanticClass(None, "AppropriateType")
+        speaker = ("Dodo", 1)
+        user = User(1, "Dodo", 1)
+        mock_get_current_speaker.return_value = speaker
+        mock_getUserFromSpeaker.return_value = user
 
-        target_unit = root
+        def handler(semantic_object):
+            # assert
+            self.assertEqual(semantic_object.semantic_class, "User")
+            self.assertEqual(semantic_object["name"].value, "Dodo")
+            self.assertEqual(semantic_object["name"].utterance, "me")
+
+        handlerMock = Mock(wraps=handler)
+
+        self._communication.register(
+            "evaluationSuccessful", handlerMock)
+
+        slots = {
+            "reference": Slot("Reference", "reference", SemanticFrame(None, "Reference", "Reference"))
+        }
+        slots["reference"].semantic_frame.utterance = "me"
+        semantic_object = SemanticFrame(None, "User", "UserByReference", slots)
+        da = DiscourseAnalysis(self._communication)
 
         # act
-        discourse_tree.insert(object_to_insert)
+        da._bind_user(semantic_object)
 
-        # assert
-        self.assertTrue(leaf_nodes[0].is_empty)
-        self.assertTrue(root_children[0].is_empty)
-        self.assertFalse(target_unit.is_empty)
-        self.assertIs(target_unit.semantic_object, object_to_insert)
 
-    def test_if_the_appropriate_discourse_unit_is_an_inner_node(self):
+class A_semantic_object_can_be_bound_to_a_date_entity(unittest.TestCase):
+
+    def setUp(self):
+        self._communication = EventMediator()
+
+    def tearDown(self):
+        del self._communication
+
+    @patch("jarpis.calendar.Calendar.getDateByOffset")
+    @patch("jarpis.calendar.Calendar.getCurrentDate")
+    def test_if_the_date_is_referenced_as_today(self, mock_current_date, mock_offset_date):
         # arrange
-        leaf_nodes = [DiscourseUnit(None, "InappropriateType1")]
-        root_children = [DiscourseUnit(None, "AppropriateType", leaf_nodes)]
-        root = DiscourseUnit(None, "InappropriateType2", root_children)
-        discourse_tree = DiscourseTree(root)
-        object_to_insert = SemanticClass(None, "AppropriateType")
+        mock_current_date.return_value = datetime.today()
+        zero_offset = timedelta(days=0)
+        mock_offset_date.return_value = mock_current_date.return_value + zero_offset
 
-        target_unit = root_children[0]
+        def handler(semantic_object):
+            # assert
+            self.assertEqual(semantic_object.semantic_class, "Date")
+            self.assertEqual(semantic_object[
+                             "timestamp"].value, mock_offset_date.return_value.isoformat())
+            self.assertEqual(semantic_object[
+                             "timestamp"].utterance, "today")
+
+        handlerMock = Mock(wraps=handler)
+
+        self._communication.register(
+            "evaluationSuccessful", handlerMock)
+
+        slots = {
+            "reference": Slot("Reference", "reference", SemanticFrame(None, "Reference", "Reference"))
+        }
+        slots["reference"].semantic_frame.utterance = "today"
+        semantic_object = SemanticFrame(None, "Date", "DateByReference", slots)
+        da = DiscourseAnalysis(self._communication)
 
         # act
-        discourse_tree.insert(object_to_insert)
-
-        # assert
-        self.assertTrue(leaf_nodes[0].is_empty)
-        self.assertTrue(root.is_empty)
-        self.assertFalse(target_unit.is_empty)
-        self.assertIs(target_unit.semantic_object, object_to_insert)
-
-    def test_if_the_appropriate_discourse_unit_is_a_leaf(self):
-        # arrange
-        leaf_nodes = [DiscourseUnit(None, "AppropriateType")]
-        root_children = [DiscourseUnit(None, "InappropriateType1", leaf_nodes)]
-        root = DiscourseUnit(None, "InappropriateType2", root_children)
-        discourse_tree = DiscourseTree(root)
-        object_to_insert = SemanticClass(None, "AppropriateType")
-
-        target_unit = leaf_nodes[0]
-
-        # act
-        discourse_tree.insert(object_to_insert)
-
-        # assert
-        self.assertTrue(root.is_empty)
-        self.assertTrue(root_children[0].is_empty)
-        self.assertFalse(target_unit.is_empty)
-        self.assertIs(target_unit.semantic_object, object_to_insert)
+        da._bind_date(semantic_object)

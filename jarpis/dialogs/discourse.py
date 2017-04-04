@@ -1,255 +1,125 @@
-import jarpis.dialogs
+import jarpis.recognition.speakerRecognition as speakerRecognition
+from jarpis.user import User, UserNotFoundException
+from jarpis.calendar import Calendar
+from jarpis.dialogs.semantics import SemanticUserFrame, SemanticDateFrame
 
 
-class DialogManager:
+class DiscourseAnalysis:
 
-    def __init__(self, discourse_trees=None):
-        if discourse_trees is None:
-            discourse_trees = []
-
-        self._discourse_trees = discourse_trees
+    def __init__(self, event_mediator):
+        self._communication = event_mediator
         self._register_events()
 
     def _register_events(self):
-        # semantic interpreter events
-        jarpis.dialogs.communication.register(
-            "interpretationSuccessfull", self._insert_into_discourse_trees)
-        jarpis.dialogs.communication.register(
-            "nothingToInterpret", self._nothing_to_interpret)
-        jarpis.dialogs.communication.register(
-            "interpretationFinished", self._start_semantic_evaluation)
+        self._communication.register(
+            "evaluationRequest", self._evaluate)
 
-        # discourse analysis events
-        jarpis.dialogs.communication.register(
-            "evaluationSuccessfull", self._semantic_object_evaluated)
-        jarpis.dialogs.communication.register(
-            "evaluationFailed", self._semantic_object_evaluation_failed)
-        jarpis.dialogs.communication.register(
-            "invalidInformation", self._invalid_semantic_object_information)
+    def _evaluate(self, semantic_object):
+        entity_type = semantic_object.entity_type
 
-    def _insert_into_discourse_trees(self, semantic_object):
-        rooted_trees = []
-        for tree in self._discourse_trees:
-            tree.insert(semantic_object)
-            if tree.is_rooted():
-                rooted_trees.append(tree)
+        if entity_type == "User":
+            self._bind_user(semantic_object)
+        if entity_type == "Date":
+            self._bind_date(semantic_object)
+        if entity_type == "Period":
+            self._bind_period(semantic_object)
+        if entity_type == "Query":
+            '''
+            If I'm correct then every query can be instantly evaluated.
+            There is no binding necessary and the "events" and "items"
+            lists should be filled by the action performed afterwards by
+            the dialog manager
+            '''
+            self._communication.publish(
+                "evaluationSuccessful", semantic_object)
 
-        self._rooted_trees = rooted_trees
+    def _bind_user(self, semantic_object):
+        semantic_class = semantic_object.semantic_class
+        if semantic_class == "UserByReference":
+            # this means the user said something with a self reference like:
+            # "for me, my, I"
+            speaker = speakerRecognition.get_current_speaker()
 
-    def _start_semantic_evaluation(self):
-        communication = jarpis.dialogs.communication
+            if speaker[0] == "anonymous":
+                self._communication.publish(
+                    "evaluationFailed", semantic_object)
+                return
 
-        discourse_tree = self._select_discourse_tree()
-        if discourse_tree is None:
-            # render response and retrieve further information from the user
-            communication.publish("noFittingDiscourseTreeFound")
-            return
+            try:
+                user = User.getUserFromSpeaker(speaker)
+            except UserNotFoundException:
+                self._communication.publish(
+                    "invalidInformation", semantic_object)
+                return
 
-        unresolved_discourse_unit = discourse_tree.get_next_unresolved_discourse_unit()
-        if unresolved_discourse_unit is not None:
-            self._set_currently_evaluated_discourse_unit(
-                unresolved_discourse_unit)
-            communication.publish("evaluationRequest",
-                                  unresolved_discourse_unit.semantic_object)
+            bound_object = SemanticUserFrame.bind(semantic_object, user)
+            self._communication.publish("evaluationSuccessful", bound_object)
         else:
-            empty_discourse_unit = discourse_tree.get_next_empty_discourse_unit()
+            raise ValueError(
+                "Unknown semantic class '{0}'".format(semantic_class))
 
-            # The rendered response must contain information about the needed entity type
-            # e. g. "Which event (entity_type) would you like to move?".
-            # Is this enough? Where does the whole response text come from? Stored in the most
-            # detailed entity semantic class?
-            communication.publish(
-                "furtherInformationRequest", empty_discourse_unit.entity_type)
+    def _bind_date(self, semantic_object):
+        semantic_class = semantic_object.semantic_class
+        if semantic_class == "DateByReference":
+            reference = semantic_object["reference"].utterance
+            possible_references = {
+                "yesterday": -1,
+                "today": 0,
+                "tomorrow": 1,
+            }
 
-    def _select_discourse_tree(self):
-        # TODO need some place to reset the _current_discourse_tree after
-        # semantic binding
-        if self._current_discourse_tree is not None:
-            return self._current_discourse_tree
-        else:
-            if len(self._rooted_trees) > 0:
-                self._set_current_discourse_tree(self._rooted_trees[0])
-                return self._current_discourse_tree
+            if reference not in possible_references:
+                self._communication.publish(
+                    "invalidInformation", semantic_object)
+                return
 
-            # TODO is a Nullobject-pattern-like tree an option?
-            return None
+            offset_in_days = possible_references[reference]
+            today = Calendar.getCurrentDate()
+            target_date = Calendar.getDateByOffset(today, offset_in_days)
+            bound_object = SemanticDateFrame.bind(semantic_object, target_date)
+            self._communication.publish("evaluationSuccessful", bound_object)
+        elif semantic_class == "DateByDays":
+            offset_in_days = semantic_object["days"].utterance
+            today = Calendar.getCurrentDate()
+            target_date = Calendar.getDateByOffset(today, offset_in_days)
+            bound_object = SemanticDateFrame.bind(semantic_object, target_date)
+            self._communication.publish("evaluationSuccessful", bound_object)
+        elif semantic_class == "DateByComponents":
+            day = semantic_object["day"].utterance
+            month = semantic_object["month"].utterance
+            year = semantic_object["year"].utterance
 
-    def _set_currently_evaluated_discourse_unit(self, unit):
-        self._currently_evaluated_discourse_unit = unit
+            try:
+                target_date = Calendar.getDateFor(
+                    day=day, month=month, year=year)
+            except ValueError:
+                self._communication.publish(
+                    "invalidInformation", semantic_object)
+                return
 
-    def _reset_currently_evaluated_discourse_unit(self):
-        del self._currently_evaluated_discourse_unit
+            bound_object = SemanticDateFrame.bind(semantic_object, target_date)
+            self._communication.publish("evaluationSuccessful", bound_object)
 
-    def _set_current_discourse_tree(self, tree):
-        self._current_discourse_tree = tree
+    def _bind_period(self, semantic_object):
+        semantic_class = semantic_object.semantic_class
+        if semantic_class == "Period":
+            start_date = semantic_object["start"].value
+            end_date = semantic_object["end"].value
 
-    def _reset_current_discourse_tree(self):
-        del self._current_discourse_tree
+            if start_date is None or end_date is None:
+                self._communication.publish(
+                    "evaluationFailed", semantic_object)
+                return
 
-    def _nothing_to_interpret(self):
-        jarpis.dialogs.communication.publish("renderLatestResponse")
+            if start_date > end_date:
+                self._communication.publish(
+                    "evaluationFailed", semantic_object)
+                return
 
-    def _semantic_object_evaluated(self, semantic_object):
-        self._currently_evaluated_discourse_unit.semantic_object = semantic_object
-        self._reset_currently_evaluated_discourse_unit()
+            current = Calendar.getCurrentDate()
+            if start_date < current or end_date < current:
+                self._communication.publish(
+                    "evaluationFailed", semantic_object)
+                return
 
-        # TODO check if the according tree is resolved and execute action
-
-    def _semantic_object_evaluation_failed(self, semantic_object):
-        pass
-
-    def _invalid_semantic_object_information(self, semantic_object):
-        pass
-
-
-class DiscourseTree:
-
-    def __init__(self, root_node):
-        self._tree_root = root_node
-
-    def insert(self, semantic_object):
-        class InsertionVisitor:
-
-            def __init__(self):
-                self.insertion_successfull = False
-
-            def visit(self, discourse_unit):
-                type_fits = discourse_unit.entity_type == semantic_object.entity_type
-
-                if discourse_unit.is_empty and type_fits:
-                    discourse_unit.semantic_object = semantic_object
-                    self.insertion_successfull = True
-                else:
-                    for child in discourse_unit.children:
-                        child.accept_visitor(self)
-
-        inserter = InsertionVisitor()
-        self._tree_root.accept_visitor(inserter)
-
-        return inserter.insertion_successfull
-
-    def is_rooted(self):
-        return not self._tree_root.is_empty
-
-    def get_next_unresolved_discourse_unit(self):
-        class UnresolvedObjectVisitor:
-
-            def visit(self, discourse_unit):
-                all_children_resolved = True
-
-                for child in discourse_unit.children:
-                    if self.resolvable_object_found:
-                        return
-
-                    if child.is_resolved:
-                        continue
-
-                    if child.is_empty:
-                        all_children_resolved = False
-                        continue
-
-                    child.accept_visitor(self)
-                    all_children_resolved = False
-
-                if all_children_resolved:
-                    self.discourse_unit = discourse_unit
-
-            @property
-            def resolvable_object_found(self):
-                return self.discourse_unit is not None
-
-        visitor = UnresolvedObjectVisitor()
-        self._tree_root.accept_visitor(visitor)
-        return visitor.discourse_unit
-
-    def get_next_empty_discourse_unit(self):
-        # This method is only called if get_next_unresolved_discourse_unit()
-        # returns no discourse unit. Therefore the following visitor
-        # is based on the assumption that there is no unresolved leaf node and
-        # there is at least one empty leaf node.
-        #       u
-        #      /|\
-        #     / | \
-        #    r  o  u
-        #          |
-        #          o    is valid/possible at this point,
-        #
-        # whereas
-        #       u
-        #      /|\
-        #     / | \
-        #    r  o  u
-        #          |
-        #          u    is not valid/possible.
-        class EmptyDiscourseUnitVisitor:
-
-            def visit(self, discourse_unit):
-                unit_has_empty_child = False
-
-                for child in discourse_unit.children:
-                    if self.empty_unit_found:
-                        return
-
-                    if child.is_resolved:
-                        continue
-
-                    if child.is_empty:
-                        unit_has_empty_child = True
-                        break
-
-                    child.accept_visitor(self)
-                    unit_has_empty_child = False
-
-                if unit_has_empty_child:
-                    self.discourse_unit = discourse_unit
-
-            def empty_unit_found(self):
-                return self.discourse_unit is not None
-
-        visitor = EmptyDiscourseUnitVisitor()
-        self._tree_root.accept_visitor(visitor)
-        return visitor.discourse_unit
-
-
-class DiscourseUnit:
-
-    def __init__(self, evaluation_strategy, entity_type, children=None):
-        self._evaluation_strategy = evaluation_strategy
-        self._is_resolved = False
-        self._type = entity_type
-        self._semantic_object = None
-
-        if children is None:
-            children = []
-
-        self.children = children
-
-    @property
-    def is_resolved(self):
-        return self._is_resolved and not self.is_empty
-
-    @property
-    def is_empty(self):
-        return self.semantic_object is None
-
-    @property
-    def semantic_object(self):
-        return self._semantic_object
-
-    @semantic_object.setter
-    def semantic_object(self, value):
-        self._semantic_object = value
-
-    @property
-    def entity_type(self):
-        return self._type
-
-    def accept_visitor(self, visitor):
-        visitor.visit(self)
-
-    def resolve(self):
-        self._is_resolved = True
-
-
-class SemanticEvaluationError(Exception):
-    pass
+            self._communication.publish("evaluationSuccessful", bound_object)

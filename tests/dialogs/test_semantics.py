@@ -2,8 +2,8 @@ from __future__ import absolute_import
 import unittest
 from mock import Mock
 from parsetron import Grammar, Set
-import jarpis.dialogs
-from jarpis.dialogs.semantics import SemanticInterpreter, SemanticClass, Slot
+from jarpis.dialogs.events import EventMediator
+from jarpis.dialogs.semantics import SemanticInterpreter, SemanticFrame, Slot
 
 
 class The_interpreter_can_instantiate_a_semantic_object(unittest.TestCase):
@@ -17,7 +17,7 @@ class The_interpreter_can_instantiate_a_semantic_object(unittest.TestCase):
             GOAL = utterance
 
         self._grammar = TestGrammar()
-        self._communication = jarpis.dialogs.communication
+        self._communication = EventMediator()
 
     def tearDown(self):
         del self._grammar
@@ -25,23 +25,26 @@ class The_interpreter_can_instantiate_a_semantic_object(unittest.TestCase):
 
     def test_if_the_utterance_contains_the_necessary_keywords(self):
         # arrange
-        slots = {"language": Slot(None, "language"),
-                 "adjective": Slot(None, "adjective")}
-        semantic_class = SemanticClass(self._grammar, "test", slots)
-        interpreter = SemanticInterpreter([semantic_class])
+        slots = {"language": Slot(None, "language", SemanticFrame(None, None, None)),
+                 "adjective": Slot(None, "adjective", SemanticFrame(None, None, None))}
+        semantic_class = SemanticFrame(self._grammar, "test", "test", slots)
+        interpreter = SemanticInterpreter(
+            self._communication, [semantic_class])
         utterance = "Python is cool"
 
         def handler(semantic_object):
             # assertions
             self.assertIn("language", semantic_object.slots)
             self.assertIn("adjective", semantic_object.slots)
-            self.assertEqual(semantic_object.slots["language"].value, "Python")
-            self.assertEqual(semantic_object.slots["adjective"].value, "cool")
+            self.assertEqual(semantic_object[
+                             "language"].utterance, "Python")
+            self.assertEqual(semantic_object[
+                             "adjective"].utterance, "cool")
 
         handlerMock = Mock(wraps=handler)
 
         self._communication.register(
-            "interpretationSuccessfull", handlerMock)
+            "interpretationSuccessful", handlerMock)
 
         # act
         interpreter.interpret(utterance)
@@ -61,7 +64,7 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
             GOAL = utterance
 
         self._grammar = TestGrammar()
-        self._communication = jarpis.dialogs.communication
+        self._communication = EventMediator()
 
     def tearDown(self):
         del self._grammar
@@ -69,15 +72,16 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
 
     def test_if_the_utterance_does_not_contain_the_necessary_keywords(self):
         # arrange
-        slots = {"language": Slot(None, "language"),
-                 "adjective": Slot(None, "adjective")}
-        semantic_class = SemanticClass(self._grammar, "test", slots)
-        interpreter = SemanticInterpreter([semantic_class])
+        slots = {"language": Slot(None, "language", SemanticFrame(None, None, None)),
+                 "adjective": Slot(None, "adjective", SemanticFrame(None, None, None))}
+        semantic_class = SemanticFrame(self._grammar, "test", "test", slots)
+        interpreter = SemanticInterpreter(
+            self._communication, [semantic_class])
         utterance = "Dodo ist ein Chefkoch"
         interpretationSuccessfull = Mock()
         interpretationFinished = Mock()
         self._communication.register(
-            "interpretationSuccessfull", interpretationSuccessfull)
+            "interpretationSuccessful", interpretationSuccessfull)
         self._communication.register(
             "interpretationFinished", interpretationFinished)
 
@@ -90,10 +94,11 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
 
     def test_if_the_utterance_is_empty(self):
         # arrange
-        slots = {"language": Slot(None, "language"),
-                 "adjective": Slot(None, "adjective")}
-        semantic_class = SemanticClass(self._grammar, "test", slots)
-        interpreter = SemanticInterpreter([semantic_class])
+        slots = {"language": Slot(None, "language", SemanticFrame(None, None, None)),
+                 "adjective": Slot(None, "adjective", SemanticFrame(None, None, None))}
+        semantic_class = SemanticFrame(self._grammar, "test", "test", slots)
+        interpreter = SemanticInterpreter(
+            self._communication, [semantic_class])
         utterance = ""
         handler = Mock()
         self._communication.register("nothingToInterpret", handler)
@@ -106,10 +111,11 @@ class The_interpreter_can_not_instantiate_a_semantic_object(unittest.TestCase):
 
     def test_if_the_utterance_is_None(self):
         # arrange
-        slots = {"language": Slot(None, "language"),
-                 "adjective": Slot(None, "adjective")}
-        semantic_class = SemanticClass(self._grammar, "test", slots)
-        interpreter = SemanticInterpreter([semantic_class])
+        slots = {"language": Slot(None, "language", SemanticFrame(None, None, None)),
+                 "adjective": Slot(None, "adjective", SemanticFrame(None, None, None))}
+        semantic_class = SemanticFrame(self._grammar, "test", "test", slots)
+        interpreter = SemanticInterpreter(
+            self._communication, [semantic_class])
         utterance = None
         handler = Mock()
         self._communication.register("nothingToInterpret", handler)

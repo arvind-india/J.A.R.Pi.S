@@ -1,42 +1,41 @@
 from parsetron import RobustParser
-import jarpis.dialogs
 
 
 class SemanticInterpreter:
 
-    def __init__(self, semantic_classes=None):
+    def __init__(self, mediator, semantic_classes=None):
         if semantic_classes is None:
             semantic_classes = []
         self._semantic_classes = semantic_classes
+        self._communication = mediator
 
     def interpret(self, utterance):
-        communication = jarpis.dialogs.communication
-
         if utterance is None or not utterance.strip():
-            communication.publish("nothingToInterpret")
+            self._communication.publish("nothingToInterpret")
             return
 
         for semantic_class in self._semantic_classes:
             parser = RobustParser(semantic_class.grammar)
             tree, result = parser.parse(utterance)
             if tree is not None:
-                communication.publish(
-                    "interpretationSuccessfull",
+                self._communication.publish(
+                    "interpretationSuccessful",
                     semantic_class.fill_slots(result))
 
         # TODO Do we need to explicitly publish an event if no semantic object could be parsed?
         # Need a boolean then to check if any semantic object could be parsed.
-        communication.publish("interpretationFinished")
+        self._communication.publish("interpretationFinished")
 
 
-class SemanticClass:
+class SemanticFrame:
 
-    def __init__(self, grammar, type, slots=None):
+    def __init__(self, grammar, type, semantic_class, slots=None):
         if slots is None:
             slots = {}
 
         self._grammar = grammar
         self._type = type
+        self._class = semantic_class
         self._slots = slots
 
     @property
@@ -48,6 +47,28 @@ class SemanticClass:
         return self._grammar
 
     @property
+    def semantic_class(self):
+        return self._class
+
+    @property
+    def utterance(self):
+        return self._utterance
+
+    @utterance.setter
+    def utterance(self, value):
+        if value is not None:
+            self._utterance = value
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        if value is not None:
+            self._value = value
+
+    @property
     def slots(self):
         return self._slots
 
@@ -55,24 +76,30 @@ class SemanticClass:
         for name, slot in self._slots.iteritems():
             parsed_value = parse_results[name]
             if parsed_value is not None:
-                slot.value = parsed_value
+                slot.semantic_frame.utterance = parsed_value
 
         return self
+
+    def __getitem__(self, key):
+        return self._slots[key]
+
+    def __setitem__(self, key, value):
+        self._slots[key] = value
+
+    def __delitem__(self, key):
+        del self._slots[key]
 
 
 class Slot:
 
-    def __init__(self, type, name):
+    def __init__(self, type, name, semantic_frame):
         self._type = type
         self._name = name
-        self._value = None
+        self.semantic_frame = semantic_frame
 
     def __repr__(self):
-        return "name=%s, type=%s, value=%s" % (self.name, self.type, self.value)
-
-    @property
-    def value(self):
-        return self._value
+        return ("name=%s, type=%s, value=%s" %
+                (self.name, self.type, self.semantic_frame))
 
     @property
     def name(self):
@@ -82,7 +109,54 @@ class Slot:
     def type(self):
         return self._type
 
-    @value.setter
-    def value(self, value):
-        if value is not None:
-            self._value = value
+    @property
+    def utterance(self):
+        return self.semantic_frame.utterance
+
+    @property
+    def value(self):
+        return self.semantic_frame.value
+
+
+class SemanticUserFrame(SemanticFrame):
+    entity_type = "User"
+
+    @classmethod
+    def bind(cls, frame, user):
+        if frame.entity_type == cls.entity_type:
+            username_frame = SemanticFrame(None, "Username", "Username")
+            username_frame.utterance = frame["reference"].utterance
+            username_frame.value = user.name
+            slots = {
+                "name": Slot(cls.entity_type, "name", username_frame)
+            }
+
+            user_frame = cls(frame.grammar, cls.entity_type,
+                             cls.entity_type, slots)
+            user_frame.entity = user
+            return user_frame
+        else:
+            raise ValueError(("Entity type of semantic frame does not match"
+                              "expected type. (actual={0} | expected={1}").format(frame.entity_type, cls.entity_type))
+
+
+class SemanticDateFrame(SemanticFrame):
+    entity_type = "Date"
+
+    @classmethod
+    def bind(cls, frame, date):
+        if frame.entity_type == cls.entity_type:
+            timestamp_frame = SemanticFrame(None, "Timestamp", "Timestamp")
+            timestamp_frame.utterance = frame["reference"].utterance
+            timestamp_frame.value = date.isoformat()
+            slots = {
+                "timestamp": Slot(cls.entity_type, "timestamp", timestamp_frame)
+            }
+
+            date_frame = cls(frame.grammar, cls.entity_type,
+                             cls.entity_type, slots)
+            date_frame.entity = date
+            return date_frame
+        else:
+            raise ValueError(("Entity type of semantic frame does not match"
+                              "expected type. (actual={0} | expected={1}").format(frame.entity_type, cls.entity_type))
